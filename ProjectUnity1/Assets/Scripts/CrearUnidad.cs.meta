@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 2ccfc5d8c4a5cd248bf63d5d4301395e
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - unidadArquero: {fileID: 6077379209756478222, guid: e6a2d5ecbfd07fc42876c9282c42c3d5, type: 3}
+  - unidadAldeano: {fileID: 1703339036154130859, guid: 551511e28667ba642a9c78337104bcb9, type: 3}
+  - unidadCaballero: {instanceID: 0}
+  - puntoSpawn: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
