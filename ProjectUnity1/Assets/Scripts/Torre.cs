@@ -2,10 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Torre : MonoBehaviour, IBuilding
+public class Torre : EdificioBase
 {
-    public Faccion faccion;
-
     [Header("Combate")]
     [SerializeField] private Transform puntoDisparo;
     [SerializeField] private GameObject proyectilPrefab;
@@ -13,31 +11,12 @@ public class Torre : MonoBehaviour, IBuilding
     [SerializeField] private float tiempoEntreDisparos = 1.5f;
     private float tiempoUltimoDisparo = 0f;
 
-    [Header("Visuales")]
-    [SerializeField] private GameObject visualConstruccion;
-    [SerializeField] private GameObject visualConstruido;
-    [SerializeField] private GameObject visualDerribado;
-    [SerializeField] private Transform puntoConstruccion;
-
-    private bool construido = false;
-    public bool Est·Construido => construido;
-
-    [Header("ConstrucciÛn")]
-    [SerializeField] private float tiempoConstruccion = 7f;
-    public float TiempoConstruccion => tiempoConstruccion;
-    public Transform GetPuntoConstruccion() => puntoConstruccion;
-
-    [Header("Costos")]
-    [SerializeField] private List<CostoEdificio> costos;
-    public List<CostoEdificio> Costos => costos;
-
-    void Start()
+    private void Start()
     {
-        MostrarSolo(visualConstruccion);
-        StartCoroutine(ProcesoConstruccion(() => CompleteConstruction()));
+        BeginConstruction();
     }
 
-    void Update()
+    private void Update()
     {
         if (!Est·Construido || !PuedeDisparar()) return;
 
@@ -56,7 +35,8 @@ public class Torre : MonoBehaviour, IBuilding
         Collider2D[] posibles = Physics2D.OverlapCircleAll(transform.position, radioDeteccion);
         foreach (var c in posibles)
         {
-            if (c.CompareTag("Enemigo"))
+            var entidad = c.GetComponent<EntidadBase>();
+            if (entidad != null && entidad.faccion != this.faccion && entidad.faccion != Faccion.Neutral && entidad.EstaVivo())
                 return c.gameObject;
         }
         return null;
@@ -74,45 +54,12 @@ public class Torre : MonoBehaviour, IBuilding
 
         if (proyectil.TryGetComponent<Flecha>(out var flecha))
         {
-            flecha.SetDanio(10); // podÈs adaptar el daÒo si la torre escala
+            flecha.SetDanio(10);
             flecha.SetEmisor(gameObject);
         }
     }
 
-    public void BeginConstruction()
-    {
-        MostrarSolo(visualConstruccion);
-        StartCoroutine(ProcesoConstruccion(() => CompleteConstruction()));
-    }
-
-    public void CompleteConstruction()
-    {
-        MostrarSolo(visualConstruido);
-        GestorOrdenVisualCamara.Instance?.ActualizarOrdenes();
-        construido = true;
-    }
-
-    public void Derribar()
-    {
-        MostrarSolo(visualDerribado);
-        GestorOrdenVisualCamara.Instance?.ActualizarOrdenes();
-        construido = false;
-    }
-
-    private void MostrarSolo(GameObject activo)
-    {
-        visualConstruccion.SetActive(activo == visualConstruccion);
-        visualConstruido.SetActive(activo == visualConstruido);
-        visualDerribado.SetActive(activo == visualDerribado);
-    }
-
-    public IEnumerator ProcesoConstruccion(System.Action onConstruccionTerminada)
-    {
-        yield return new WaitForSeconds(tiempoConstruccion);
-        onConstruccionTerminada?.Invoke();
-    }
-
-    void OnDrawGizmosSelected()
+    private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, radioDeteccion);

@@ -26,7 +26,7 @@ public abstract class EdificioBase : EntidadBase, IBuilding
     public virtual void BeginConstruction()
     {
         MostrarSolo(visualConstruccion);
-        StartCoroutine(ProcesoConstruccion(() => CompleteConstruction()));
+        StartCoroutine(ProcesoConstruccion(CompleteConstruction));
     }
 
     public virtual void CompleteConstruction()
@@ -44,7 +44,6 @@ public abstract class EdificioBase : EntidadBase, IBuilding
     }
 
     public IEnumerator ProcesoConstruccion(System.Action cuandoTermina)
-
     {
         yield return new WaitForSeconds(tiempoConstruccion);
         cuandoTermina?.Invoke();
@@ -55,5 +54,13 @@ public abstract class EdificioBase : EntidadBase, IBuilding
         visualConstruccion.SetActive(activo == visualConstruccion);
         visualConstruido.SetActive(activo == visualConstruido);
         visualDerribado.SetActive(activo == visualDerribado);
+        GestorOrdenVisualGlobal.ActualizarOrdenVisualGlobal();
+    }
+
+    // Permite que los edificios sean destruidos al quedarse sin vida
+    protected override void Morir()
+    {
+        Derribar();
+        base.Morir();
     }
 }

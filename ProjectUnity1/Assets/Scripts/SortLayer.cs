@@ -3,16 +3,23 @@ using System.Linq;
 
 public class SortLayer : MonoBehaviour
 {
-    [SerializeField] private int offsetDelante = +1;
-    [SerializeField] private int offsetDetras = -1;
+    [SerializeField] private int offsetDelante = +10; // Usa un offset mayor para evitar conflictos
+    [SerializeField] private int offsetDetras = -10;
     [SerializeField] private float margin = 0.5f;
 
     private SpriteRenderer[] propios;
+    private int[] ordenOriginal; // Guarda el orden original para restaurar
 
     void Awake()
     {
-        // Cacheamos todos los SpriteRenderer de este objeto y sus hijos
-        propios = GetComponentsInChildren<SpriteRenderer>();
+        // Incluye el SpriteRenderer del objeto raíz si existe
+        var propiosLista = GetComponentsInChildren<SpriteRenderer>(true).ToList();
+        var srRaiz = GetComponent<SpriteRenderer>();
+        if (srRaiz != null && !propiosLista.Contains(srRaiz))
+            propiosLista.Add(srRaiz);
+
+        propios = propiosLista.ToArray();
+        ordenOriginal = propios.Select(sr => sr.sortingOrder).ToArray();
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -36,8 +43,15 @@ public class SortLayer : MonoBehaviour
             ? ordenBase + offsetDelante
             : ordenBase + offsetDetras;
 
-        foreach (var sr in propios)
-            sr.sortingOrder = nuevoOrden;
+        for (int i = 0; i < propios.Length; i++)
+            propios[i].sortingOrder = nuevoOrden + i; // Si hay varios renderers, mantener el orden relativo
+    }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        // Al salir del trigger, restaurar el orden original
+        for (int i = 0; i < propios.Length; i++)
+            propios[i].sortingOrder = ordenOriginal[i];
     }
 
     private bool EsObjetoOrdenable(Collider2D col)
