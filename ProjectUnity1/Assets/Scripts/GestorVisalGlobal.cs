@@ -9,7 +9,12 @@ public class GestorOrdenVisualGlobal : MonoBehaviour
 
     [Tooltip("Ignorar objetos que contienen Canvas (UI).")]
     [SerializeField] private bool ignorarCanvas = true;
+    public static GestorOrdenVisualGlobal Instance { get; private set; }
 
+    void Awake()
+    {
+        Instance = this;
+    }
     void Start()
     {
         OrdenarTodoElMundo();
@@ -49,4 +54,10 @@ public class GestorOrdenVisualGlobal : MonoBehaviour
 
         Debug.Log($" Orden visual global completo: {ordenados.Count} objetos acomodados");
     }
+    public static void ActualizarOrdenVisualGlobal()
+    {
+        if (Instance != null)
+            Instance.OrdenarTodoElMundo();
+    }
+
 }
