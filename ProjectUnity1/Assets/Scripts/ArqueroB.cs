@@ -23,19 +23,31 @@ public class Arquero : UnidadJugador
 
     protected override void Start()
     {
-        base.Start();
-        vida = 80;
+        InicializarVida(80);
         ataque = 15;
         defensa = 5;
         velocidad = 5;
+       
+        base.Start();
     }
 
     public override void EjecutarAccion(GameObject objetivo, Vector3 destino)
     {
+        StopAllCoroutines();
+        ResetearAnimacionesDisparo();
+
         if (objetivo == null)
         {
             agent.SetDestination(destino);
             return;
+        }
+        if (objetivo.TryGetComponent<EntidadBase>(out var entidadObjetivo))
+        {
+            if (!FaccionUtils.SonEnemigos(faccion, entidadObjetivo.faccion))
+            {
+                Debug.Log(" Objetivo aliado. Cancelando acción de ataque.");
+                return;
+            }
         }
 
         if (rutinaAtaque != null)
@@ -87,7 +99,12 @@ public class Arquero : UnidadJugador
         if (orientador != null)
             orientador.GirarVisual(objetivo.transform.position);
 
+        StartCoroutine(DispararConRetardo(objetivo, direccion, angle));
+    }
 
+    private IEnumerator DispararConRetardo(GameObject objetivo, Vector2 direccion, float angle)
+    {
+        yield return new WaitForSeconds(0.2f); // Ajusta según la animación
 
         GameObject proyectil = Instantiate(proyectilPrefab, puntoDisparoActual.position, Quaternion.Euler(0, 0, angle));
         proyectil.GetComponent<Rigidbody2D>().velocity = direccion * 10f;

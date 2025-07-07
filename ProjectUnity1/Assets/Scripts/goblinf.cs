@@ -6,12 +6,12 @@ public class Gobling : UnidadEnemigo, IAtacable
 
     protected override void Start()
     {
-        base.Start();
-        vida = 60;
+        InicializarVida(60);
         ataque = 8;
         defensa = 3;
         velocidad = 3;
-        Debug.Log($"{name} tiene facción: {faccion}");
+        base.Start();
+        
 
     }
 
@@ -49,8 +49,8 @@ public class Gobling : UnidadEnemigo, IAtacable
     public override void RecibirDanio(int cantidad)
     {
         vida -= cantidad;
-        Debug.Log($"{name} recibió {cantidad} de daño. Vida restante: {vida}");
-
+        
+        ActualizarVidaVisual();
         if (vida <= 0)
         {
             // Podés poner animación de muerte o efectos visuales aquí

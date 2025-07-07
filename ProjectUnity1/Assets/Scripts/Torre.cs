@@ -11,10 +11,13 @@ public class Torre : EdificioBase
     [SerializeField] private float tiempoEntreDisparos = 1.5f;
     private float tiempoUltimoDisparo = 0f;
 
-    private void Start()
+    protected override void Start()
     {
+        InicializarVida(100); // o la vida que quieras
         BeginConstruction();
+        base.Start();
     }
+
 
     private void Update()
     {

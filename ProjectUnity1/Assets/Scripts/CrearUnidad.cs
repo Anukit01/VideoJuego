@@ -11,22 +11,45 @@ public class CrearUnidad : MonoBehaviour
 
     public void CrearAldeano1()
     {
-       
-        StartCoroutine(CrearAldeano());
+        if (SeleccionadorDeUnidad.Instance.todasLasUnidades.Count >= GestionRecrsos.Instance.poblacion)
+        {
+            Debug.Log("No se puede crear más unidades. Límite de población alcanzado.");
+            return;
+        }
+        else
+        {
+
+            StartCoroutine(CrearAldeano());
+        }
+
     }
     public void CrearArquero1()
     {
-
-        StartCoroutine(CrearArquero());
+        if (SeleccionadorDeUnidad.Instance.todasLasUnidades.Count >= GestionRecrsos.Instance.poblacion)
+        {
+            Debug.Log("No se puede crear más unidades. Límite de población alcanzado.");
+            return;
+        }
+        else
+        {
+            StartCoroutine(CrearArquero());
+        }
     }
     public void CrearCaballero1()
     {
-
-        StartCoroutine(CrearCaballero());
+        if (SeleccionadorDeUnidad.Instance.todasLasUnidades.Count >= GestionRecrsos.Instance.poblacion)
+        {
+            Debug.Log("No se puede crear más unidades. Límite de población alcanzado.");
+            return;
+        }
+        else
+        {
+            StartCoroutine(CrearCaballero());
+        }
     }
     public IEnumerator CrearArquero()
     {
-
+      
         if (unidadArquero == null)
         {
             Debug.LogError("Error: unidadPrefab no está asignado en el Inspector.");

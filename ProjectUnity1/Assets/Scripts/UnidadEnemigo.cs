@@ -8,7 +8,8 @@ public abstract class UnidadEnemigo : UnidadBase
     protected float tiempoEntreAcciones = 1f;
     protected float proximoMovimiento = 0f;
 
-    protected virtual void Start()
+    protected override void Start()
+
     {
         agent = GetComponent<NavMeshAgent>();
         agent.updateRotation = false;

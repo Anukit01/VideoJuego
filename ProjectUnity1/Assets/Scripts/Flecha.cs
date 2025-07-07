@@ -26,15 +26,12 @@ public class Flecha : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        // No impactar contra el emisor
         if (collision.gameObject == emisor)
             return;
 
-        // Ignorar ovejas u objetos que no deben recibir daño
         if (collision.TryGetComponent<Sheep>(out _))
             return;
 
-        // Verificar facción y aplicar daño si corresponde
         if (emisor.TryGetComponent<EntidadBase>(out var emisorEntidad) &&
             collision.TryGetComponent<EntidadBase>(out var objetivoEntidad))
         {
@@ -47,10 +44,18 @@ public class Flecha : MonoBehaviour
             if (objetivoEntidad is IAtacable atacable)
             {
                 Debug.Log($"La entidad es atacable. Aplicando daño...");
-                atacable.RecibirDanio(danio);
-                Destroy(gameObject);
+                // Inicia la corrutina para aplicar el daño tras un retardo
+                StartCoroutine(AplicarDanioConRetardo(atacable));
                 return;
             }
         }
     }
+
+    private System.Collections.IEnumerator AplicarDanioConRetardo(IAtacable atacable)
+    {
+        yield return new WaitForSeconds(0.15f); // Ajusta el tiempo según la animación de impacto
+        atacable.RecibirDanio(danio);
+        Destroy(gameObject);
+    }
 }
+    

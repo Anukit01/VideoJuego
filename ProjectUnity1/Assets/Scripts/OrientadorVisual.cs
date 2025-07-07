@@ -16,11 +16,20 @@ public class OrientadorVisual : MonoBehaviour
     /// </summary>
     public void GirarVisual(Vector3 referencia)
     {
-        if (spriteRenderer == null) return;
-
         float escalaX = referencia.x >= transform.position.x ? 1f : -1f;
-        transform.localScale = new Vector3(escalaX, 1f, 1f);
+
+        foreach (Transform hijo in transform)
+        {
+            if (hijo.CompareTag("Vida"))
+                continue; // ignorar canvas o elementos de vida
+
+            // Invertir escala X en los hijos visuales
+            Vector3 escala = hijo.localScale;
+            escala.x = Mathf.Abs(escala.x) * escalaX;
+            hijo.localScale = escala;
+        }
     }
+
 
     /// <summary>
     /// Gira el sprite según la dirección (para NavMesh o flecha).

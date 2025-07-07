@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class GestionRecrsos : MonoBehaviour
 {
-    public static GestionRecrsos Instance; // Instancia estática
+    public static GestionRecrsos Instance; 
     private Dictionary<string, int> recursos = new Dictionary<string, int>();
 
     public int alimento = 50;
@@ -46,7 +46,7 @@ public class GestionRecrsos : MonoBehaviour
         TextAlimento.text = "Alimento: " + alimento;
         TextOro.text = "Oro: " + oro;
         TextMadera.text = "Madera: " + madera;
-        TextPoblacion.text =  "/ Población:" + poblacion;
+        TextPoblacion.text = $"Población: {SeleccionadorDeUnidad.Instance.todasLasUnidades.Count} / {GestionRecrsos.Instance.poblacion}";
     }
     public bool TieneRecurso(string nombre, int cantidad)
     {

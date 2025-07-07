@@ -21,12 +21,13 @@ public class Aldeano : UnidadJugador
 
     protected override void Start()
     {
-        base.Start();
-
-        vida = 70;
+        InicializarVida(70);
         ataque = 5;
         defensa = 5;
         velocidad = 2;
+
+        base.Start();
+
     }
 
     public override void EjecutarAccion(GameObject objetivo, Vector3 destino)
@@ -43,18 +44,30 @@ public class Aldeano : UnidadJugador
         if (objetivo.TryGetComponent<Sheep>(out var oveja))
         {
             AtacarOveja(oveja);
+            return;
         }
-        else if (objetivo.TryGetComponent<Oro>(out var mina))
+
+        if (objetivo.TryGetComponent<Oro>(out var mina))
         {
             StartCoroutine(RecolectarOroRutina(mina));
+            return;
         }
-        else if (objetivo.TryGetComponent<IRecolectable>(out var recurso))
+
+        if (objetivo.TryGetComponent<IRecolectable>(out var recurso))
         {
             CargaRecoleccion.tipo = recurso.Tipo;
             CargaRecoleccion.visual = ObtenerVisualPara(recurso.Tipo);
             ultimoRecurso = recurso;
 
             StartCoroutine(MoverYRecolectar(recurso, recurso.PuntoDeRecoleccion));
+            return;
+        }
+
+        if (objetivo.TryGetComponent<IAtacable>(out var atacable) &&
+            objetivo.TryGetComponent<EntidadBase>(out var entidad) &&
+            FaccionUtils.SonEnemigos(faccion, entidad.faccion))
+        {
+            StartCoroutine(CombatirEntidadRutina(objetivo, atacable));
         }
     }
 
@@ -160,16 +173,52 @@ public class Aldeano : UnidadJugador
         agent.SetDestination(oveja.transform.position);
         StartCoroutine(AtacarOvejaRutina());
     }
+    private IEnumerator CombatirEntidadRutina(GameObject objetivo, IAtacable atacable)
+    {
+        estadoActual = EstadoAldeano.Atacando;
+
+        float distanciaAtaque = 1.3f; // Distancia deseada para el ataque
+        float stoppingDistanceOriginal = agent.stoppingDistance;
+        agent.stoppingDistance = distanciaAtaque;
+
+        agent.SetDestination(objetivo.transform.position);
+
+        yield return new WaitUntil(() => Vector2.Distance(transform.position, objetivo.transform.position) <= distanciaAtaque + 0.05f);
+
+        animator.SetBool("Talar", true);
+
+        while (objetivo != null && atacable != null && atacable.EstaVivo())
+        {
+            var orientador = GetComponent<OrientadorVisual>();
+            if (orientador != null)
+                orientador.GirarVisual(objetivo.transform.position);
+            yield return new WaitForSeconds(0.2f); // Espera el "impacto" de la animación
+            atacable.RecibirDanio(ataque);
+            yield return new WaitForSeconds(1f - 0.2f);
+        }
+
+        animator.SetBool("Talar", false);
+        estadoActual = EstadoAldeano.Idle;
+        agent.stoppingDistance = stoppingDistanceOriginal; // Restaurar valor original
+    }
 
     private IEnumerator AtacarOvejaRutina()
     {
-        yield return new WaitUntil(() => ovejaActual != null && Vector2.Distance(transform.position, ovejaActual.transform.position) <= 1f);
+        float distanciaAtaque = 1.3f; // Ajusta este valor según tu animación  
+        float stoppingDistanceOriginal = agent.stoppingDistance;
+        agent.stoppingDistance = distanciaAtaque;
+
+        // Moverse hacia la oveja hasta estar a la distancia adecuada  
+        agent.SetDestination(ovejaActual.transform.position);
+        yield return new WaitUntil(() => ovejaActual != null && Vector2.Distance(transform.position, ovejaActual.transform.position) <= distanciaAtaque + 0.05f);
 
         while (ovejaActual != null && ovejaActual.vida > 0)
         {
-            MirarHacia(ovejaActual.transform.position);
+            var orientador = GetComponent<OrientadorVisual>();
+            if (orientador != null)
+                orientador.GirarVisual(ovejaActual.transform.position);   
             animator.SetBool("Talar", true);
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.3f);
             ovejaActual.RecibirDanio(ataque);
 
             yield return new WaitUntil(() => ovejaActual == null || !ovejaActual.EnHuida);
@@ -182,12 +231,7 @@ public class Aldeano : UnidadJugador
 
         animator.SetBool("Talar", false);
         estadoActual = EstadoAldeano.Idle;
-    }
-
-    private void MirarHacia(Vector3 objetivo)
-    {
-        float direccion = objetivo.x - transform.position.x;
-        transform.localScale = new Vector3(direccion >= 0 ? 1 : -1, 1, 1);
+        agent.stoppingDistance = stoppingDistanceOriginal; // Restaurar valor original  
     }
 
     private IEnumerator RecolectarOroRutina(Oro mina)
@@ -241,7 +285,7 @@ public class Aldeano : UnidadJugador
                 if (!GestionRecrsos.Instance.TieneRecurso(costo.nombreRecurso, costo.cantidad))
                     yield break;
         }
-        
+
         GameObject edificio = Instantiate(prefab, posicion, Quaternion.identity);
         BuildingPlacementManager.Instance?.ActualizarNavMesh();
         yield return new WaitForSeconds(0.05f);
@@ -257,7 +301,9 @@ public class Aldeano : UnidadJugador
             {
                 agent.SetDestination(punto.position);
                 yield return new WaitUntil(() => Vector2.Distance(transform.position, punto.position) <= 0.5f);
-                MirarHacia(edificio.transform.position);
+                var orientador = GetComponent<OrientadorVisual>();
+                if (orientador != null)
+                    orientador.GirarVisual(punto.position); // Reemplazo 'objetivo.transform.position' con 'punto.position'  
             }
 
             animator.SetBool("Construir", true);

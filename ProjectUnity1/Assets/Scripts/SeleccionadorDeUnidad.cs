@@ -19,11 +19,7 @@ public class SeleccionadorDeUnidad : MonoBehaviour
         todasLasUnidades.Clear();
     }
 
-    private void Start()
-    {
-        foreach (var unidad in FindObjectsOfType<CharactBase>())
-            todasLasUnidades.Add(unidad.gameObject);
-    }
+   
 
     private void Update()
     {
@@ -53,17 +49,23 @@ public class SeleccionadorDeUnidad : MonoBehaviour
 
         RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
 
-        if (hit.collider != null && hit.collider.CompareTag("Unidad"))
+        if (hit.collider != null && hit.collider.GetComponent<EntidadBase>() != null) { 
+
+            var entidad = hit.collider.GetComponent<EntidadBase>();
+
+        if (entidad is EdificioBase edificio && edificio is Base baseEdificio)
+        {
+            baseEdificio.menuEdificio.SetActive(!baseEdificio.menuEdificio.activeSelf);
+        }
+        else if (entidad is UnidadJugador)
         {
             if (Input.GetKey(KeyCode.LeftShift))
                 AlternarSeleccion(hit.collider.gameObject);
             else
                 SeleccionarSolo(hit.collider.gameObject);
         }
-        else if (!Input.GetKey(KeyCode.LeftShift))
-        {
-            DeseleccionarTodas();
         }
+
     }
 
 

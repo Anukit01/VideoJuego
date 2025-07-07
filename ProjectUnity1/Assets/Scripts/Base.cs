@@ -5,12 +5,16 @@ using System.Collections.Generic;
 public class Base : EdificioBase
 {
     public GameObject menuEdificio;
+    public GameObject vidaVisual;
 
-    private void Start()
+    protected override void Start()
     {
+        InicializarVida(170); 
         BeginConstruction();
+        base.Start();
+        
     }
-
+    
     public override void CompleteConstruction()
     {
         base.CompleteConstruction();
@@ -19,6 +23,16 @@ public class Base : EdificioBase
 
     private void OnMouseDown()
     {
+        
+        
+        vidaVisual.SetActive(!vidaVisual.activeSelf);
+
+        if (!construido)
+            return;
+
         menuEdificio.SetActive(!menuEdificio.activeSelf);
+
+
+
     }
 }
