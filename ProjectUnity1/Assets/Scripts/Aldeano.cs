@@ -22,6 +22,7 @@ public class Aldeano : UnidadJugador
     protected override void Start()
     {
         InicializarVida(70);
+      
         ataque = 5;
         defensa = 5;
         velocidad = 2;
@@ -44,12 +45,14 @@ public class Aldeano : UnidadJugador
         if (objetivo.TryGetComponent<Sheep>(out var oveja))
         {
             AtacarOveja(oveja);
+            SeleccionadorDeUnidad.Instance.DeseleccionarTodas();
             return;
         }
 
         if (objetivo.TryGetComponent<Oro>(out var mina))
         {
             StartCoroutine(RecolectarOroRutina(mina));
+            SeleccionadorDeUnidad.Instance.DeseleccionarTodas();
             return;
         }
 
@@ -60,8 +63,31 @@ public class Aldeano : UnidadJugador
             ultimoRecurso = recurso;
 
             StartCoroutine(MoverYRecolectar(recurso, recurso.PuntoDeRecoleccion));
+            SeleccionadorDeUnidad.Instance.DeseleccionarTodas();
             return;
         }
+
+        if (objetivo.TryGetComponent<EdificioBase>(out var edificioPendiente))
+        {
+            Debug.Log("Edificio pendiente de construcción: " + edificioPendiente.name);
+            if (edificioPendiente.EstáConstruido)
+            {
+                Debug.LogWarning("El edificio ya está construido.");
+                return;
+            }
+            if (FaccionUtils.SonEnemigos(faccion, edificioPendiente.faccion))
+            {
+                Debug.Log("Son Enemigos");
+                return;
+            }
+            if (!edificioPendiente.EstáConstruido && edificioPendiente.VidaActual < edificioPendiente.VidaMaxima)
+            {
+                StopAllCoroutines();
+                StartCoroutine(ContinuarConstruccionExistente(objetivo));
+                return;
+            }
+        }
+
 
         if (objetivo.TryGetComponent<IAtacable>(out var atacable) &&
             objetivo.TryGetComponent<EntidadBase>(out var entidad) &&
@@ -83,6 +109,7 @@ public class Aldeano : UnidadJugador
     {
         estadoActual = EstadoAldeano.Idle;
         animator.SetBool("Talar", false);
+        animator.SetBool("Construir", false);
         animator.SetBool("ManosOcupadas", false);
         CargaRecoleccion?.Vaciar();
         if (CargaRecoleccion?.visual != null)
@@ -295,26 +322,100 @@ public class Aldeano : UnidadJugador
         {
             foreach (var costo in nuevoEdificio.Costos)
                 GestionRecrsos.Instance.GastarRecurso(costo.nombreRecurso, costo.cantidad);
-
-            Transform punto = nuevoEdificio.GetPuntoConstruccion();
-            if (punto != null)
+            Transform zona = edificio.transform.Find("ZonaConstruccion");
+            float radioConstruccion = 1.5f;
+            if (zona.TryGetComponent<CircleCollider2D>(out var collider))
             {
-                agent.SetDestination(punto.position);
-                yield return new WaitUntil(() => Vector2.Distance(transform.position, punto.position) <= 0.5f);
-                var orientador = GetComponent<OrientadorVisual>();
-                if (orientador != null)
-                    orientador.GirarVisual(punto.position); // Reemplazo 'objetivo.transform.position' con 'punto.position'  
+                radioConstruccion = collider.radius * zona.lossyScale.x; // escalado real
             }
 
+            yield return new WaitUntil(() =>
+                Vector2.Distance(transform.position, zona.position) <= radioConstruccion &&
+                agent.velocity.magnitude <= 0.1f);
+
+
+                var orientador = GetComponent<OrientadorVisual>();
+                Transform centroVisual = edificio.transform.Find("visualConstruccion");
+                if (centroVisual != null)
+                    orientador.GirarVisual(centroVisual.position);
+                else
+                    orientador.GirarVisual(edificio.transform.position);                
+                yield return new WaitForSeconds(0.4f);
+                // Reemplazo 'objetivo.transform.position' con 'punto.position'  
+            }
+            nuevoEdificio.BeginConstruction(); // activa visual de construcción
             animator.SetBool("Construir", true);
             estadoActual = EstadoAldeano.Construyendo;
 
-            yield return StartCoroutine(nuevoEdificio.ProcesoConstruccion(() =>
+            float tiempoEntreConstrucciones = 1.2f;
+            int cantidadConstruccion = 5;
+            if (edificio.TryGetComponent<EdificioBase>(out var nuevoEdificio1))
             {
-                animator.SetBool("Construir", false);
-                estadoActual = EstadoAldeano.Idle;
-            }));
+                while (nuevoEdificio1.VidaActual < nuevoEdificio1.VidaMaxima)
+                {
+                    // Si el aldeano fue interrumpido
+                    if (estadoActual != EstadoAldeano.Construyendo)
+                        yield break;
+
+                    nuevoEdificio1.SumarVida(cantidadConstruccion);
+
+                    yield return new WaitForSeconds(tiempoEntreConstrucciones);
+                       
+                }
+            
+            animator.SetBool("Construir", false); // finalizar animación
         }
+            
+           
+
+        }
+    private IEnumerator ContinuarConstruccionExistente(GameObject edificioExistente)
+    {
+        if (!edificioExistente.TryGetComponent<EdificioBase>(out var nuevoEdificio))
+            yield break;
+
+        Transform zona = edificioExistente.transform.Find("ZonaConstruccion");
+        float radioConstruccion = 1.5f;
+
+        if (zona != null && zona.TryGetComponent<CircleCollider2D>(out var collider))
+            radioConstruccion = collider.radius * zona.lossyScale.x;
+
+        agent.SetDestination(zona != null ? zona.position : edificioExistente.transform.position);
+        yield return new WaitUntil(() =>
+            Vector2.Distance(transform.position, zona.position) <= radioConstruccion &&
+            agent.velocity.magnitude <= 0.1f);
+
+        var orientador = GetComponent<OrientadorVisual>();
+        Transform centroVisual = edificioExistente.transform.Find("visualConstruccion");
+
+        if (orientador != null)
+        {
+            if (centroVisual != null)
+                orientador.GirarVisual(centroVisual.position);
+            else
+                orientador.GirarVisual(edificioExistente.transform.position);
+        }
+
+        yield return new WaitForSeconds(0.4f);
+
+        nuevoEdificio.BeginConstruction();
+        animator.SetBool("Construir", true);
+        estadoActual = EstadoAldeano.Construyendo;
+
+        float tiempoEntreConstrucciones = 1.2f;
+        int cantidadConstruccion = 5;
+
+        while (nuevoEdificio.VidaActual < nuevoEdificio.VidaMaxima)
+        {
+            if (estadoActual != EstadoAldeano.Construyendo)
+                yield break;
+
+            nuevoEdificio.SumarVida(cantidadConstruccion);
+            yield return new WaitForSeconds(tiempoEntreConstrucciones);
+        }
+
+        animator.SetBool("Construir", false); // finalizar animación
+        estadoActual = EstadoAldeano.Idle;
     }
 }
 

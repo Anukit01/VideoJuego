@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Torre : EdificioBase
 {
+    public GameObject vidaVisual;
     [Header("Combate")]
     [SerializeField] private Transform puntoDisparo;
     [SerializeField] private GameObject proyectilPrefab;
@@ -13,12 +14,23 @@ public class Torre : EdificioBase
 
     protected override void Start()
     {
-        InicializarVida(100); // o la vida que quieras
+        InicializarVida(0);
+        vidaMaxima = 100;
+        construido = false;
         BeginConstruction();
-        base.Start();
+
     }
+    private void OnMouseDown()
+    {
+        vidaVisual.SetActive(!vidaVisual.activeSelf);
 
-
+    }
+    public override void CompleteConstruction()
+    {
+        base.CompleteConstruction();
+        if (vidaVisual != null)
+            vidaVisual.SetActive(false);     
+    }
     private void Update()
     {
         if (!Est·Construido || !PuedeDisparar()) return;

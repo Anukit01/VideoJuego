@@ -4,17 +4,18 @@ public abstract class EntidadBase : MonoBehaviour, IAtacable
 {
     public Faccion faccion;
     [SerializeField] protected int vidaMaxima;
-    protected int vida;
+    [SerializeField] protected int vida;
 
     public int VidaMaxima => vidaMaxima;
     public int VidaActual => vida;
 
-    public void InicializarVida(int cantidad)
+    public virtual void InicializarVida(int cantidad)
     {
         vidaMaxima = cantidad;
         vida = cantidad;
         ActualizarVidaVisual();
     }
+   
 
     protected virtual void Start()
     {
@@ -27,7 +28,6 @@ public abstract class EntidadBase : MonoBehaviour, IAtacable
 
 
     }
-
 
 
     public virtual bool EstaVivo() => vida > 0;

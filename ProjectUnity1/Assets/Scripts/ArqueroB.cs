@@ -24,6 +24,7 @@ public class Arquero : UnidadJugador
     protected override void Start()
     {
         InicializarVida(80);
+       
         ataque = 15;
         defensa = 5;
         velocidad = 5;

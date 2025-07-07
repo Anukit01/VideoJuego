@@ -9,7 +9,7 @@ public abstract class EdificioBase : EntidadBase, IBuilding
     [SerializeField] protected GameObject visualConstruido;
     [SerializeField] protected GameObject visualDerribado;
     [SerializeField] protected Transform puntoConstruccion;
-
+    
     [Header("Construcción")]
     [SerializeField] protected float tiempoConstruccion = 5f;
 
@@ -22,17 +22,33 @@ public abstract class EdificioBase : EntidadBase, IBuilding
     public float TiempoConstruccion => tiempoConstruccion;
     public Transform GetPuntoConstruccion() => puntoConstruccion;
     public List<CostoEdificio> Costos => costos;
+    
+
+    public void SumarVida(int cantidad)
+    {
+        vida = Mathf.Min(VidaActual + cantidad, VidaMaxima);
+
+        ActualizarVidaVisual();
+
+        if (VidaActual == VidaMaxima && !construido)
+        {
+            CompleteConstruction(); // cambia sprite al estado final
+                                       // activá navmesh, collider, menú, etc.
+        }
+    }
 
     public virtual void BeginConstruction()
     {
         MostrarSolo(visualConstruccion);
-        StartCoroutine(ProcesoConstruccion(CompleteConstruction));
+        construido = false;
+
     }
 
     public virtual void CompleteConstruction()
     {
         MostrarSolo(visualConstruido);
         construido = true;
+        
         GestorOrdenVisualCamara.Instance?.ActualizarOrdenes();
     }
 
@@ -54,7 +70,7 @@ public abstract class EdificioBase : EntidadBase, IBuilding
         visualConstruccion.SetActive(activo == visualConstruccion);
         visualConstruido.SetActive(activo == visualConstruido);
         visualDerribado.SetActive(activo == visualDerribado);
-        GestorOrdenVisualGlobal.ActualizarOrdenVisualGlobal();
+        
     }
 
     // Permite que los edificios sean destruidos al quedarse sin vida

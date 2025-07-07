@@ -11,6 +11,7 @@ public class Caballero : UnidadJugador
     protected override void Start()
     {
         InicializarVida(150);
+        
         ataque = 20;
         defensa = 10;
         velocidad = 5;

@@ -9,7 +9,7 @@ public abstract class UnidadJugador : UnidadBase, IAccionContextual
     protected List<CostoEdificio> costos;
     public virtual List<CostoEdificio> Costos => costos;
 
-    protected virtual void Start()
+    protected override void Start()
     {
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
@@ -18,8 +18,8 @@ public abstract class UnidadJugador : UnidadBase, IAccionContextual
         agent.updateUpAxis = false;
         agent.stoppingDistance = 0.05f;
         agent.autoBraking = true;
-
-        SeleccionadorDeUnidad.Instance?.todasLasUnidades.Add(gameObject);
+        base.Start();
+        
     }
 
     public abstract void EjecutarAccion(GameObject objetivo, Vector3 destino);

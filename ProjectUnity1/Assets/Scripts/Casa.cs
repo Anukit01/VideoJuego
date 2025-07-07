@@ -5,17 +5,26 @@ using UnityEngine;
 
 public class Casa : EdificioBase
 {
+    public GameObject vidaVisual;
     protected override void Start()
     {
-        InicializarVida(50); // o la vida que quieras
+        InicializarVida(0);
+        vidaMaxima = 50;
+        construido = false;
         BeginConstruction();
-        base.Start();
+        
     }
 
+    private void OnMouseDown()
+    {
+        vidaVisual.SetActive(!vidaVisual.activeSelf);
 
+    }
     public override void CompleteConstruction()
     {
         base.CompleteConstruction();
+        if (vidaVisual != null)
+            vidaVisual.SetActive(false);
         GestionRecrsos.Instance.SumarPoblación(2);
     }
 }

@@ -53,11 +53,7 @@ public class SeleccionadorDeUnidad : MonoBehaviour
 
             var entidad = hit.collider.GetComponent<EntidadBase>();
 
-        if (entidad is EdificioBase edificio && edificio is Base baseEdificio)
-        {
-            baseEdificio.menuEdificio.SetActive(!baseEdificio.menuEdificio.activeSelf);
-        }
-        else if (entidad is UnidadJugador)
+        if (entidad is UnidadJugador)
         {
             if (Input.GetKey(KeyCode.LeftShift))
                 AlternarSeleccion(hit.collider.gameObject);

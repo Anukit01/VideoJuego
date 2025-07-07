@@ -16,19 +16,21 @@ public class OrientadorVisual : MonoBehaviour
     /// </summary>
     public void GirarVisual(Vector3 referencia)
     {
-        float escalaX = referencia.x >= transform.position.x ? 1f : -1f;
+        Transform visualPrincipal = spriteRenderer != null ? spriteRenderer.transform : transform;
+
+        float escalaX = referencia.x >= visualPrincipal.position.x ? 1f : -1f;
 
         foreach (Transform hijo in transform)
         {
             if (hijo.CompareTag("Vida"))
-                continue; // ignorar canvas o elementos de vida
+                continue;
 
-            // Invertir escala X en los hijos visuales
             Vector3 escala = hijo.localScale;
             escala.x = Mathf.Abs(escala.x) * escalaX;
             hijo.localScale = escala;
         }
     }
+
 
 
     /// <summary>

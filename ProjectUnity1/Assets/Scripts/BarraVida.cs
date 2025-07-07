@@ -18,18 +18,22 @@ public class VidaVisual : MonoBehaviour
         Invoke(nameof(ActualizarVidaVisual), 0.01f); // pequeño retraso
     }   
 
-        public void Mostrar(bool mostrar)
+    public void Mostrar(bool mostrar)
         {
             if (canvasVida != null)
                 canvasVida.SetActive(mostrar);
         }
 
-        public void ActualizarVidaVisual()
+    public void ActualizarVidaVisual()
     {
+       
+
         if (barraVida == null || entidad == null) return;
         barraVida.fillAmount = (float)entidad.VidaActual / entidad.VidaMaxima;
         if (textoVida != null)
             textoVida.text = $"{entidad.VidaActual} / {entidad.VidaMaxima}";
+        float vidaFraccion = entidad.VidaMaxima > 0 ? (float)entidad.VidaActual / entidad.VidaMaxima : 0f;
+        barraVida.fillAmount = Mathf.Clamp01(vidaFraccion);
 
     }
     
