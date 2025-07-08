@@ -51,10 +51,13 @@ public class CharactBase : MonoBehaviour, IAtacable
     {
         if (objetivo.TryGetComponent<IAtacable>(out IAtacable atacable))
         {
-            atacable.RecibirDanio(ataque);
+            atacable.RecibirDanio(ataque, gameObject);
             
         }
     }
 
-    
+    public void RecibirDanio(int cantidad, GameObject atacante)
+    {
+        throw new System.NotImplementedException();
+    }
 }

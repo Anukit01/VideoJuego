@@ -26,7 +26,7 @@ public class Sheep : MonoBehaviour, IAtacable
 
     }
 
-    public void RecibirDanio(int cantidad)
+    public void RecibirDanio(int cantidad, GameObject atacante)
     {
         vida -= cantidad;
         StartCoroutine(FlashRojo());

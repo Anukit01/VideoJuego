@@ -32,17 +32,32 @@ public abstract class EntidadBase : MonoBehaviour, IAtacable
 
     public virtual bool EstaVivo() => vida > 0;
 
-    public virtual void RecibirDanio(int cantidad)
+    public virtual void RecibirDanio(int cantidad, GameObject atacante)
     {
-        vida -= cantidad;
+        int defensaLocal = 0;
+        if (this is UnidadBase unidadDefensora)
+            defensaLocal = unidadDefensora.defensa;
+
+        vida -= Mathf.Max(cantidad - defensaLocal, 0);
         ActualizarVidaVisual();
+
         if (vida <= 0)
             Morir();
+
+        if (this is UnidadBase unidad && unidad.respondeAlAtaque && unidad.EstaVivo())
+        {
+            float distancia = Vector2.Distance(transform.position, atacante.transform.position);
+            if (distancia < 6f)
+                unidad.EjecutarAccion(atacante, atacante.transform.position);
+        }
+
+
     }
+
 
     protected virtual void Morir()
     {
-        Destroy(gameObject);
+       
     }
     protected void ActualizarVidaVisual()
     {

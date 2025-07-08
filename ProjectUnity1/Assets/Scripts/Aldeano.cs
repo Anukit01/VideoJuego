@@ -220,7 +220,7 @@ public class Aldeano : UnidadJugador
             if (orientador != null)
                 orientador.GirarVisual(objetivo.transform.position);
             yield return new WaitForSeconds(0.2f); // Espera el "impacto" de la animación
-            atacable.RecibirDanio(ataque);
+            atacable.RecibirDanio(ataque, gameObject);
             yield return new WaitForSeconds(1f - 0.2f);
         }
 
@@ -246,7 +246,7 @@ public class Aldeano : UnidadJugador
                 orientador.GirarVisual(ovejaActual.transform.position);   
             animator.SetBool("Talar", true);
             yield return new WaitForSeconds(0.3f);
-            ovejaActual.RecibirDanio(ataque);
+            ovejaActual.RecibirDanio(ataque, gameObject);
 
             yield return new WaitUntil(() => ovejaActual == null || !ovejaActual.EnHuida);
 

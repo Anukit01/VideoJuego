@@ -155,5 +155,8 @@ public class SeleccionadorDeUnidad : MonoBehaviour
 
         canvasConstruccion.SetActive(hayAldeano);
     }
-
+    public void Deseleccionar(GameObject unidad)
+    {
+                    CambiarSeleccion(unidad, false);
+    }
 }

@@ -42,6 +42,9 @@ public class Arquero : UnidadJugador
             agent.SetDestination(destino);
             return;
         }
+        if (objetivo != null && objetivo.TryGetComponent<Sheep>(out var oveja))
+            return;
+
         if (objetivo.TryGetComponent<EntidadBase>(out var entidadObjetivo))
         {
             if (!FaccionUtils.SonEnemigos(faccion, entidadObjetivo.faccion))

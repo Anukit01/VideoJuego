@@ -7,6 +7,7 @@ public abstract class UnidadEnemigo : UnidadBase
     protected Transform objetivoActual;
     protected float tiempoEntreAcciones = 1f;
     protected float proximoMovimiento = 0f;
+    protected Animator animator;
 
     protected override void Start()
 
@@ -35,12 +36,21 @@ public abstract class UnidadEnemigo : UnidadBase
     protected void MoverHacia(Vector3 destino)
     {
         if (agent != null)
+        {
+            animator.SetBool("IsMoving", true);
             agent.SetDestination(destino);
+
+            Vector2 direccion = destino - transform.position;
+            GetComponent<OrientadorVisual>()?.GirarPorDireccion(direccion);
+        }
+
+    }
+    protected override void Morir()
+    {
+        animator.SetTrigger("Morir"); // la animación debe estar como trigger
+
+        Destroy(gameObject, 1f); // da tiempo a la animación antes de desaparecer
     }
 
-    // O directamente con Transform si no usás NavMesh
-    protected void MoverSimple(Vector3 destino, float velocidadMovimiento)
-    {
-        transform.position = Vector2.MoveTowards(transform.position, destino, velocidadMovimiento * Time.deltaTime);
-    }
+
 }

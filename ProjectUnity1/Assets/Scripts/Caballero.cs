@@ -29,6 +29,9 @@ public class Caballero : UnidadJugador
             agent.SetDestination(destino);
             return;
         }
+        if (objetivo != null && objetivo.TryGetComponent<Sheep>(out var oveja))       
+            return;
+        
 
         if (objetivo.TryGetComponent<EntidadBase>(out var entidadObjetivo))
         {
@@ -88,7 +91,7 @@ public class Caballero : UnidadJugador
                     // Espera el "impacto" de la animación antes de aplicar el daño  
                     yield return new WaitForSeconds(0.25f); // Ajusta según la animación  
 
-                    atacable.RecibirDanio(ataque);
+                    atacable.RecibirDanio(ataque, gameObject);    
                     tiempoUltimoGolpe = Time.time;
                     ResetearAnimacionesAtaque();
                 }

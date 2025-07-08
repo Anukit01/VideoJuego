@@ -22,5 +22,12 @@ public abstract class UnidadJugador : UnidadBase, IAccionContextual
         
     }
 
-    public abstract void EjecutarAccion(GameObject objetivo, Vector3 destino);
+    protected override void Morir()
+    {
+        animator.SetTrigger("Morir"); // la animación debe estar como trigger
+        SeleccionadorDeUnidad.Instance?.Deseleccionar(gameObject); //  removemos de selección
+
+        Destroy(gameObject, 1f); // da tiempo a la animación antes de desaparecer
+    }
+
 }
