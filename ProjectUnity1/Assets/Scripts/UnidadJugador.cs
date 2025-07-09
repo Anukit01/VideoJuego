@@ -27,7 +27,7 @@ public abstract class UnidadJugador : UnidadBase, IAccionContextual
         animator.SetTrigger("Morir"); // la animación debe estar como trigger
         SeleccionadorDeUnidad.Instance?.Deseleccionar(gameObject); //  removemos de selección
 
-        Destroy(gameObject, 1f); // da tiempo a la animación antes de desaparecer
+        Destroy(gameObject, 1.7f); // da tiempo a la animación antes de desaparecer
     }
 
 }

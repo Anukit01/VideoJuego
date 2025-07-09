@@ -49,7 +49,7 @@ public abstract class UnidadEnemigo : UnidadBase
     {
         animator.SetTrigger("Morir"); // la animación debe estar como trigger
 
-        Destroy(gameObject, 1f); // da tiempo a la animación antes de desaparecer
+        Destroy(gameObject, 1.7f); // da tiempo a la animación antes de desaparecer
     }
 
 

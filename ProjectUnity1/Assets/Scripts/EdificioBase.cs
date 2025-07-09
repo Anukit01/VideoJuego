@@ -41,14 +41,14 @@ public abstract class EdificioBase : EntidadBase, IBuilding
     {
         MostrarSolo(visualConstruccion);
         construido = false;
-
+       
     }
 
     public virtual void CompleteConstruction()
     {
         MostrarSolo(visualConstruido);
         construido = true;
-        
+     
         GestorOrdenVisualCamara.Instance?.ActualizarOrdenes();
     }
 
@@ -73,6 +73,7 @@ public abstract class EdificioBase : EntidadBase, IBuilding
         
     }
 
+   
     // Permite que los edificios sean destruidos al quedarse sin vida
     protected override void Morir()
     {

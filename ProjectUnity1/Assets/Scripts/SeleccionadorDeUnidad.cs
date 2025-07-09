@@ -19,8 +19,6 @@ public class SeleccionadorDeUnidad : MonoBehaviour
         todasLasUnidades.Clear();
     }
 
-   
-
     private void Update()
     {
         if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
@@ -28,42 +26,50 @@ public class SeleccionadorDeUnidad : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
             ManejarClickIzquierdo();
-        
-
 
         if (Input.GetMouseButtonDown(1) && unidadesSeleccionadas.Count > 0)
             ManejarClickDerecho();
-        ActualizarCanvasDeConstruccion();
 
+        ActualizarCanvasDeConstruccion();
     }
 
     private void ManejarClickIzquierdo()
     {
-        // Evitar clics sobre la UI
-        if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
-            return;
-
-        // Evitar deseleccionar mientras estás colocando un edificio
         if (BuildingPlacementManager.Instance != null && BuildingPlacementManager.Instance.IsPlacing())
             return;
 
-        RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+        Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Collider2D hit = Physics2D.OverlapPoint(mousePos);
 
-        if (hit.collider != null && hit.collider.GetComponent<EntidadBase>() != null) { 
-
-            var entidad = hit.collider.GetComponent<EntidadBase>();
-
-        if (entidad is UnidadJugador)
+        if (hit != null && hit.GetComponent<UnidadJugador>() is UnidadJugador unidad)
         {
             if (Input.GetKey(KeyCode.LeftShift))
-                AlternarSeleccion(hit.collider.gameObject);
+            {
+                AlternarSeleccion(unidad.gameObject);
+            }
             else
-                SeleccionarSolo(hit.collider.gameObject);
+            {
+                if (unidadesSeleccionadas.Contains(unidad.gameObject))
+                    DeseleccionarTodas();
+                else
+                    SeleccionarSolo(unidad.gameObject);
+            }
         }
+        else
+        {
+            if (!Input.GetKey(KeyCode.LeftShift))
+                DeseleccionarTodas();
         }
 
+        if (!SelectorPorArrastreActivo() && hit == null)
+            DeseleccionarTodas();
     }
 
+    private bool SelectorPorArrastreActivo()
+    {
+        var arrastrador = FindObjectOfType<SelectorPorArrastre>();
+        return arrastrador != null && arrastrador.EstaArrastrando;
+    }
 
     private void ManejarClickDerecho()
     {
@@ -73,34 +79,23 @@ public class SeleccionadorDeUnidad : MonoBehaviour
 
         foreach (var unidad in unidadesSeleccionadas)
         {
-            
             if (unidad.TryGetComponent<IAccionContextual>(out var accionable))
             {
-                
                 if (objetivo != null && objetivo.TryGetComponent<IRecolectable>(out var recurso))
-                {
                     accionable.EjecutarAccion(objetivo, recurso.PuntoDeRecoleccion.position);
-                }
-                // Si hay objetivo e implementa IAtacable, se ejecuta como ataque
                 else if (objetivo != null && objetivo.TryGetComponent<IAtacable>(out var atacable))
-                {
                     accionable.EjecutarAccion(objetivo, destino);
-                }
                 else
-                {
-                   accionable.EjecutarAccion(null, destino);
-                }
+                    accionable.EjecutarAccion(null, destino);
             }
             else if (unidad.TryGetComponent<Movimiento>(out var movimiento))
             {
                 movimiento.MoverA(destino);
             }
         }
-        
     }
 
-
-    private void AlternarSeleccion(GameObject unidad)
+    public void AlternarSeleccion(GameObject unidad)
     {
         bool agregar = !unidadesSeleccionadas.Contains(unidad);
         CambiarSeleccion(unidad, agregar);
@@ -111,7 +106,7 @@ public class SeleccionadorDeUnidad : MonoBehaviour
             unidadesSeleccionadas.Remove(unidad);
     }
 
-    private void SeleccionarSolo(GameObject unidad)
+    public void SeleccionarSolo(GameObject unidad)
     {
         DeseleccionarTodas();
         unidadesSeleccionadas.Add(unidad);
@@ -140,6 +135,7 @@ public class SeleccionadorDeUnidad : MonoBehaviour
             CambiarSeleccion(unidad, true);
         }
     }
+
     private void ActualizarCanvasDeConstruccion()
     {
         bool hayAldeano = false;
@@ -155,8 +151,9 @@ public class SeleccionadorDeUnidad : MonoBehaviour
 
         canvasConstruccion.SetActive(hayAldeano);
     }
+
     public void Deseleccionar(GameObject unidad)
     {
-                    CambiarSeleccion(unidad, false);
+        CambiarSeleccion(unidad, false);
     }
 }

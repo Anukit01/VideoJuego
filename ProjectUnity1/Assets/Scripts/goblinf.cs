@@ -22,7 +22,7 @@ public class Gobling : UnidadEnemigo, IAtacable
         velocidad = 3.5f;
 
 
-        if (puntosPatrulla.Length > 0)
+        if (puntosPatrulla != null && puntosPatrulla.Length > 0)
             MoverHacia(puntosPatrulla[indicePatrulla].position);
     }
     public override void EjecutarAccion(GameObject objetivo, Vector3 destino)
@@ -56,7 +56,7 @@ public class Gobling : UnidadEnemigo, IAtacable
         }
     }
 
-       private void Patrullar()
+    private void Patrullar()
     {
         if (esperando || agent.pathPending) return;
 
@@ -88,8 +88,20 @@ public class Gobling : UnidadEnemigo, IAtacable
                 if (FaccionUtils.SonEnemigos(faccion, unidadJugador.faccion))
                     return unidadJugador.gameObject;
             }
+
+           /* if (col.TryGetComponent<EdificioBase>(out var entidadBase))
+            {
+                if (FaccionUtils.SonEnemigos(faccion, entidadBase.faccion))
+                    return entidadBase.gameObject;
+            }
+
+            if (col.TryGetComponent<Sheep>(out var oveja))
+            {
+                continue; // ignorar ovejas, pero seguir buscando
+            }*/
         }
-        return null;
+
+        return null; //solo si no encontró ningún objetivo válido
     }
 
 
@@ -110,6 +122,7 @@ public class Gobling : UnidadEnemigo, IAtacable
             if (distancia > 1.5f)
             {
                 agent.SetDestination(objetivo.transform.position);
+                animator.SetBool("IsMoving", true);
             }
             else
             {
@@ -119,7 +132,7 @@ public class Gobling : UnidadEnemigo, IAtacable
                 var orientador = GetComponent<OrientadorVisual>();
                 if (orientador != null)
                     orientador.GirarVisual(objetivo.transform.position);
-
+                animator.SetBool("IsMoving", false);
                 if (Time.time >= tiempoUltimoGolpe + tiempoEntreGolpes)
                 {
                     ActualizarAnimacionAtaque(direccion);

@@ -147,11 +147,15 @@ public class Aldeano : UnidadJugador
     {
         var puntos = GameObject.FindObjectsOfType<PuntoDeEntrega>();
         foreach (var p in puntos)
+        {
+            if (!p.enabled) continue; // 👈 Salteamos puntos inactivos
             if (p.tipoAceptado == tipo)
                 return p.transform.position;
+        }
 
         return transform.position;
     }
+
 
     private IEnumerator DepositarRecoleccion()
     {

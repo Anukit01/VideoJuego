@@ -13,8 +13,6 @@ public class Base : EdificioBase
         vidaMaxima = 150;
         if (!iniciarConstruido)
         {
-
-
             InicializarVida(0);
             construido = false;
             BeginConstruction();
@@ -26,29 +24,48 @@ public class Base : EdificioBase
             CompleteConstruction(); 
         }     
     }
+   
 
+    public override void BeginConstruction()
+    {
+        base.BeginConstruction();
+        if (gameObject.TryGetComponent<PuntoDeEntrega>(out var puntoEntrega))
+        {
+            puntoEntrega.enabled = false;
+        }
+    }
     public override void InicializarVida(int cantidad)
     {
         if (vidaMaxima <= 0)
         {
             Debug.LogWarning($" vidaMaxima no inicializada en '{name}'");
-            vidaMaxima = 1; // fallback seguro
+            vidaMaxima = 1;
         }
 
         vida = Mathf.Clamp(cantidad, 0, vidaMaxima);
         ActualizarVidaVisual();
+
+        if (EstáConstruido && gameObject.TryGetComponent<PuntoDeEntrega>(out var puntoEntrega))
+        {
+            puntoEntrega.enabled = true;
+        }
     }
 
     public override void CompleteConstruction()
     {
         base.CompleteConstruction();
+
         if (vidaVisual != null)
             vidaVisual.SetActive(false);
-        
+
+        if (gameObject.TryGetComponent<PuntoDeEntrega>(out var puntoEntrega))
+            puntoEntrega.enabled = true; // ahora sí está construido 
+
         GestionRecrsos.Instance.SumarPoblación(3);
     }
 
-      private void OnMouseDown()
+
+    private void OnMouseDown()
     {
         if (vidaVisual != null)
             vidaVisual.SetActive(!vidaVisual.activeSelf);
