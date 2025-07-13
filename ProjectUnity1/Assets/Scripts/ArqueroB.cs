@@ -16,10 +16,15 @@ public class Arquero : UnidadJugador
     [SerializeField] private float radioDeteccion = 3f;
     [SerializeField] private float tiempoEntreDisparos = 1.5f;
 
+    [SerializeField] private AudioSource fuenteArquero;
+    [SerializeField] private AudioClip clipGolpear;
+    [SerializeField] private AudioClip clipMorir;
+
     private float tiempoUltimoDisparo = 0f;
     private Coroutine rutinaAtaque;
     private bool atacando;
     private Transform puntoDisparoActual;
+    public bool EstaAtacando() => atacando;
 
     protected override void Start()
     {
@@ -42,22 +47,58 @@ public class Arquero : UnidadJugador
             agent.SetDestination(destino);
             return;
         }
-        if (objetivo != null && objetivo.TryGetComponent<Sheep>(out var oveja))
+
+        // Si el objetivo es una oveja, los arqueros no reaccionan
+        if (objetivo.TryGetComponent<Sheep>(out var oveja))
             return;
 
+        // Si el objetivo es aliado, cancelar ataque
         if (objetivo.TryGetComponent<EntidadBase>(out var entidadObjetivo))
         {
             if (!FaccionUtils.SonEnemigos(faccion, entidadObjetivo.faccion))
             {
-                Debug.Log(" Objetivo aliado. Cancelando acción de ataque.");
+                Debug.Log("Objetivo aliado. Cancelando acción de ataque.");
                 return;
+            }
+
+            // Detener movimiento para no interferir con ataque melee
+            agent.SetDestination(transform.position);
+
+            //  Iniciar evasión si el enemigo está muy cerca
+            float distanciaPeligro = 2f;
+            float distancia = Vector2.Distance(transform.position, objetivo.transform.position);
+
+            if (distancia <= distanciaPeligro)
+            {
+                StartCoroutine(EvadirEnemigo(objetivo));
             }
         }
 
+        // Iniciar rutina de disparo
         if (rutinaAtaque != null)
             StopCoroutine(rutinaAtaque);
 
         rutinaAtaque = StartCoroutine(CombatirObjetivo(objetivo));
+    }
+    private IEnumerator EvadirEnemigo(GameObject enemigo)
+    {
+        yield return null;
+
+        Vector2 direccionContraria = (transform.position - enemigo.transform.position).normalized;
+        Vector2 destinoFinal = (Vector2)transform.position + direccionContraria * 2f;
+
+        // Validar que el punto está en NavMesh
+        if (NavMesh.SamplePosition(destinoFinal, out NavMeshHit hit, 1f, NavMesh.AllAreas))
+        {
+            agent.SetDestination(hit.position);
+        }
+        else
+        {
+            // Si no es válido, se queda en su lugar
+            Debug.LogWarning("Evasión cancelada: punto no válido en NavMesh.");
+            agent.SetDestination(transform.position);
+        }
+
     }
 
     private IEnumerator CombatirObjetivo(GameObject objetivo)
@@ -79,14 +120,37 @@ public class Arquero : UnidadJugador
 
                 if (Time.time >= tiempoUltimoDisparo + tiempoEntreDisparos)
                 {
-                    Disparar(objetivo);
+                    if (fuenteArquero != null && clipGolpear != null)
+                    {
+                        ReproducirLoop(clipGolpear);
+                    }
+                    //  Dirección del enemigo al momento de disparar
+                    Vector2 direccion = (objetivo.transform.position - transform.position).normalized;
+
+                    // Reforzar giro visual de combate
+                    if (Mathf.Abs(direccion.x) > Mathf.Abs(direccion.y) &&
+                        TryGetComponent<OrientadorVisual>(out var orientador))
+                    {
+                        orientador.ForzarGiroVisual(direccion.x >= 0);
+                    }
+
+                    puntoDisparoActual = ElegirPuntoDisparo(transform.position, objetivo.transform.position);
+                    ActivarAnimacionDisparo(transform.position, objetivo.transform.position);
+
+                    float angle = Mathf.Atan2(direccion.y, direccion.x) * Mathf.Rad2Deg;
+                    StartCoroutine(DispararConRetardo(direccion, angle));
+
                     tiempoUltimoDisparo = Time.time;
                 }
+
             }
 
             yield return null;
         }
-
+        if (fuenteArquero != null && clipGolpear != null)
+        {
+            fuenteArquero.Stop();
+        }
         atacando = false;
         ResetearAnimacionesDisparo();
         rutinaAtaque = null;
@@ -95,26 +159,28 @@ public class Arquero : UnidadJugador
     private void Disparar(GameObject objetivo)
     {
         puntoDisparoActual = ElegirPuntoDisparo(transform.position, objetivo.transform.position);
+        ActivarAnimacionDisparo(transform.position, objetivo.transform.position);
+
         Vector2 direccion = (objetivo.transform.position - puntoDisparoActual.position).normalized;
         float angle = Mathf.Atan2(direccion.y, direccion.x) * Mathf.Rad2Deg;
 
-        ActivarAnimacionDisparo(transform.position, objetivo.transform.position);
-        OrientadorVisual orientador = GetComponent<OrientadorVisual>();
-        if (orientador != null)
-            orientador.GirarVisual(objetivo.transform.position);
+        if (Mathf.Abs(direccion.x) > Mathf.Abs(direccion.y) && TryGetComponent<OrientadorVisual>(out var orientador))
+            orientador.ForzarGiroVisual(direccion.x >= 0);
 
-        StartCoroutine(DispararConRetardo(objetivo, direccion, angle));
+        StartCoroutine(DispararConRetardo(direccion, angle));
+
     }
 
-    private IEnumerator DispararConRetardo(GameObject objetivo, Vector2 direccion, float angle)
+    private IEnumerator DispararConRetardo(Vector2 direccion, float angle)
     {
-        yield return new WaitForSeconds(0.2f); // Ajusta según la animación
+        yield return new WaitForSeconds(0.2f);
 
         GameObject proyectil = Instantiate(proyectilPrefab, puntoDisparoActual.position, Quaternion.Euler(0, 0, angle));
         proyectil.GetComponent<Rigidbody2D>().velocity = direccion * 10f;
 
         if (proyectil.TryGetComponent<Flecha>(out var flecha))
         {
+            
             flecha.SetDanio(ataque);
             flecha.SetEmisor(gameObject);
             Physics2D.IgnoreCollision(flecha.GetComponent<Collider2D>(), GetComponent<Collider2D>());
@@ -193,4 +259,32 @@ public class Arquero : UnidadJugador
             diagonalAbajo = true;
         }
     }
+
+    public void ReproducirLoop(AudioClip clip)
+    {
+        if (fuenteArquero == null) return;
+        fuenteArquero.clip = clip;
+        fuenteArquero.loop = true;
+        fuenteArquero.Play();
+    }
+    public void ReproducirUna(AudioClip clip, float pitch = 1f, float volumen = 1f)
+    {
+        if (fuenteArquero == null || clip == null) return;
+        fuenteArquero.Stop();
+        fuenteArquero.pitch = pitch;
+        fuenteArquero.volume = volumen;
+        fuenteArquero.clip = clip;
+        fuenteArquero.loop = false;
+        fuenteArquero.spatialBlend = 0.5f; // 2D sound
+        fuenteArquero.PlayOneShot(clip);
+    }
+    protected override void Morir()
+    {
+        if (fuenteArquero != null && clipMorir != null)
+        {
+            ReproducirUna(clipMorir, 1f, 0.5f);
+        }
+        base.Morir();
+    }
+
 }

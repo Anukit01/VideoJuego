@@ -12,19 +12,21 @@ public class Casa : EdificioBase
         vidaMaxima = 50;
         construido = false;
         BeginConstruction();
-        
+        if (vidaVisual != null)
+            vidaVisual.SetActive(true);
     }
-
-    private void OnMouseDown()
-    {
-        vidaVisual.SetActive(!vidaVisual.activeSelf);
-
-    }
+ 
     public override void CompleteConstruction()
     {
         base.CompleteConstruction();
         if (vidaVisual != null)
             vidaVisual.SetActive(false);
         GestionRecrsos.Instance.SumarPoblación(2);
+    }
+    public void ActivarVisuales()
+    {
+        if (vidaVisual != null)
+            vidaVisual.SetActive(!vidaVisual.activeSelf);
+       
     }
 }

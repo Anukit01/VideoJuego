@@ -1,9 +1,11 @@
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Gobling : UnidadEnemigo, IAtacable
 {
-    [SerializeField] private Transform[] puntosPatrulla;
+    [SerializeField, Tooltip("Opcional. Si se asignan puntos de patrulla, la unidad patrullará.")]
+    private Transform[] puntosPatrulla = new Transform[0];
     private int indicePatrulla = 0;
 
     private float tiempoIdleEnPatrulla = 2f;
@@ -12,6 +14,11 @@ public class Gobling : UnidadEnemigo, IAtacable
     private Coroutine rutinaAtaque;
     private float tiempoEntreGolpes = 1.5f;
     private float tiempoUltimoGolpe = 0f;
+
+    [SerializeField] private AudioSource fuenteGobling;
+    [SerializeField] private AudioClip clipGolpear;
+    [SerializeField] private AudioClip clipRuido;
+    [SerializeField] private AudioClip clipMorir;
 
     protected override void Start()
     {
@@ -70,11 +77,20 @@ public class Gobling : UnidadEnemigo, IAtacable
     }
     private IEnumerator EsperarYPasarAlSiguientePunto()
     {
+        if (puntosPatrulla == null || puntosPatrulla.Length == 0)
+            yield break;
+
         yield return new WaitForSeconds(tiempoIdleEnPatrulla);
+
+        if (puntosPatrulla != null)
+        {
 
         indicePatrulla = (indicePatrulla + 1) % puntosPatrulla.Length;
         MoverHacia(puntosPatrulla[indicePatrulla].position);
         esperando = false;
+
+        }
+        
     }
 
 
@@ -86,19 +102,22 @@ public class Gobling : UnidadEnemigo, IAtacable
             if (col.TryGetComponent<UnidadJugador>(out var unidadJugador))
             {
                 if (FaccionUtils.SonEnemigos(faccion, unidadJugador.faccion))
-                    return unidadJugador.gameObject;
+                {
+                    ReproducirUna(clipRuido);
+                    return unidadJugador.gameObject;               
+                }
             }
 
-           /* if (col.TryGetComponent<EdificioBase>(out var entidadBase))
+            if (col.TryGetComponent<EdificioBase>(out var entidadBase))
             {
                 if (FaccionUtils.SonEnemigos(faccion, entidadBase.faccion))
-                    return entidadBase.gameObject;
-            }
+                {
 
-            if (col.TryGetComponent<Sheep>(out var oveja))
-            {
-                continue; // ignorar ovejas, pero seguir buscando
-            }*/
+                    ReproducirUna(clipRuido);
+                    return entidadBase.gameObject;
+                }
+            }
+         
         }
 
         return null; //solo si no encontró ningún objetivo válido
@@ -107,52 +126,84 @@ public class Gobling : UnidadEnemigo, IAtacable
 
     private IEnumerator CombatirObjetivo(GameObject objetivo)
     {
-       
         if (objetivo == null) yield break;
         if (!objetivo.TryGetComponent<IAtacable>(out var atacable)) yield break;
+        
         if (!objetivo.TryGetComponent<EntidadBase>(out var entidadObjetivo)) yield break;
-       
+        if (objetivo.TryGetComponent<Aldeano>(out var aldeano) && aldeano.EstaOcupadoPrivado)
+            yield break; // no lo ataques si está ocupado
 
         if (!FaccionUtils.SonEnemigos(faccion, entidadObjetivo.faccion)) yield break;
+       
 
+        float distanciaAtaque = 2f;
+        float margen = 0.3f;
+        float stoppingOriginal = agent.stoppingDistance;
+
+        agent.stoppingDistance = distanciaAtaque * 0.5f;
+        agent.SetDestination(objetivo.transform.position);
+
+        yield return new WaitUntil(() =>
+            !agent.pathPending &&
+            agent.hasPath &&
+            agent.remainingDistance <= distanciaAtaque + margen);
+
+        agent.SetDestination(transform.position);
+        animator.SetBool("IsMoving", false);
+        if (fuenteGobling != null)
+        {
+            ReproducirLoop(clipGolpear);
+
+        }
         while (objetivo != null && atacable.EstaVivo())
         {
-            float distancia = Vector2.Distance(transform.position, objetivo.transform.position);
-
-            if (distancia > 1.5f)
+            float distanciaActual = Vector2.Distance(transform.position, objetivo.transform.position);
+            if (distanciaActual > distanciaAtaque + margen)
             {
                 agent.SetDestination(objetivo.transform.position);
-                animator.SetBool("IsMoving", true);
-            }
-            else
-            {
-                agent.SetDestination(transform.position);
-                DireccionAtaque direccion = CalcularDireccion(transform.position, objetivo.transform.position);
-                ActualizarAnimacionAtaque(direccion);
-                var orientador = GetComponent<OrientadorVisual>();
-                if (orientador != null)
-                    orientador.GirarVisual(objetivo.transform.position);
-                animator.SetBool("IsMoving", false);
-                if (Time.time >= tiempoUltimoGolpe + tiempoEntreGolpes)
-                {
-                    ActualizarAnimacionAtaque(direccion);
-                    if (TryGetComponent<OrientadorVisual>(out var orientadorVisualGolpe))
-                        orientadorVisualGolpe.GirarVisual(objetivo.transform.position);
 
-                    yield return new WaitForSeconds(0.25f);
-                    atacable.RecibirDanio(ataque, gameObject);
-                    tiempoUltimoGolpe = Time.time;
-                    ResetearAnimacionesAtaque(); 
-                }
+                yield return new WaitUntil(() =>
+                    !agent.pathPending &&
+                    agent.hasPath &&
+                    agent.remainingDistance <= distanciaAtaque + margen);
+
+                agent.SetDestination(transform.position);
+                animator.SetBool("IsMoving", false);
+            }
+
+            //  Calcular dirección del objetivo
+            DireccionAtaque direccion = CalcularDireccion(transform.position, objetivo.transform.position);
+
+            // Girar sprite lateral si corresponde
+            if (TryGetComponent<OrientadorVisual>(out var orientador))
+            {
+                if (direccion == DireccionAtaque.Izquierda)
+                    orientador.ForzarGiroVisual(false);
+                else if (direccion == DireccionAtaque.Derecha)
+                    orientador.ForzarGiroVisual(true);
+            }
+            
+            //  Activar animación
+            ResetearAnimacionesAtaque();
+            ActualizarAnimacionAtaque(direccion);
+
+            //  Aplicar daño si corresponde
+            if (Time.time >= tiempoUltimoGolpe + tiempoEntreGolpes)
+            {
+                
+                yield return new WaitForSeconds(0.2f);
+                atacable.RecibirDanio(ataque, gameObject);
+                tiempoUltimoGolpe = Time.time;
             }
 
             yield return null;
         }
-
+        if (fuenteGobling != null && fuenteGobling.isPlaying)
+            fuenteGobling.Stop();
         ResetearAnimacionesAtaque();
+        agent.stoppingDistance = stoppingOriginal;
         rutinaAtaque = null;
     }
-
     private void ActualizarAnimacionAtaque(DireccionAtaque direccion)
     {
         animator.SetBool("AtacarLateral", false);
@@ -189,60 +240,29 @@ public class Gobling : UnidadEnemigo, IAtacable
             ? DireccionAtaque.Izquierda // solo usamos lateral, sin distinguir
             : (dir.y >= 0 ? DireccionAtaque.Arriba : DireccionAtaque.Abajo);
     }
+
+    protected override void Morir()
+    {
+        if (fuenteGobling != null && clipMorir != null)
+        {
+            ReproducirUna(clipMorir);
+        }
+        base.Morir();
+    }
+    public void ReproducirLoop(AudioClip clip)
+    {
+        if (fuenteGobling == null) return;
+        fuenteGobling.clip = clip;
+        fuenteGobling.loop = true;
+        fuenteGobling.Play();
+    }
+    public void ReproducirUna(AudioClip clip)
+    {
+        if (fuenteGobling == null || clip == null) return;
+        fuenteGobling.Stop();
+        fuenteGobling.clip = clip;
+        fuenteGobling.loop = false;
+        fuenteGobling.spatialBlend = 0.5f; // 2D sound
+        fuenteGobling.PlayOneShot(clip);
+    }
 }
-
-/*    protected override void Start()
-    {
-        InicializarVida(60);
-        ataque = 8;
-        defensa = 3;
-        velocidad = 3;
-        base.Start();
-        
-
-    }
-
-    protected override void EjecutarIA()
-    {
-        GameObject objetivo = DetectarUnidadJugador();
-        if (objetivo != null)
-        {
-            objetivoActual = objetivo.transform;
-            MoverHacia(objetivoActual.position);
-        }
-        else
-        {
-            objetivoActual = null;
-            // Podés agregar lógica de patrullaje si no hay objetivos
-        }
-    }
-
-    private GameObject DetectarUnidadJugador()
-    {
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, rangoPersecucion);
-        foreach (var hit in hits)
-        {
-            if (hit.TryGetComponent<UnidadJugador>(out var unidad))
-                return unidad.gameObject;
-        }
-        return null;
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, rangoPersecucion);
-    }
-    public override void RecibirDanio(int cantidad)
-    {
-        vida -= cantidad;
-        
-        ActualizarVidaVisual();
-        if (vida <= 0)
-        {
-            // Podés poner animación de muerte o efectos visuales aquí
-            Destroy(gameObject);
-        }
-    }
-
-}*/

@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8791589048200125027}
   - component: {fileID: 349517770534333738}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: TorreFantasma
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -70,8 +70,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -442054871
+  m_SortingLayer: 4
   m_SortingOrder: 9
   m_Sprite: {fileID: 469285779, guid: fc1686e7399b89c448b6a4d4d4e7c1f7, type: 3}
   m_Color: {r: 0, g: 1, b: 0, a: 1}

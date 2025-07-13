@@ -46,14 +46,16 @@ public abstract class EntidadBase : MonoBehaviour, IAtacable
 
         if (this is UnidadBase unidad && unidad.respondeAlAtaque && unidad.EstaVivo())
         {
-            float distancia = Vector2.Distance(transform.position, atacante.transform.position);
-            if (distancia < 6f)
-                unidad.EjecutarAccion(atacante, atacante.transform.position);
+            if (atacante != null && atacante.GetComponent<Flecha>() == null)
+            {
+                float distancia = Vector2.Distance(transform.position, atacante.transform.position);
+                if (distancia < 6f)
+                    unidad.EjecutarAccion(atacante, atacante.transform.position);
+            }
         }
 
 
     }
-
 
     protected virtual void Morir()
     {

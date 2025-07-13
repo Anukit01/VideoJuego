@@ -15,7 +15,7 @@ public abstract class UnidadEnemigo : UnidadBase
         agent = GetComponent<NavMeshAgent>();
         agent.updateRotation = false;
         agent.updateUpAxis = false;
-        agent.stoppingDistance = 0.5f;
+        agent.stoppingDistance = 0.7f;
     }
 
     protected virtual void Update()
@@ -47,8 +47,8 @@ public abstract class UnidadEnemigo : UnidadBase
     }
     protected override void Morir()
     {
+        StopAllCoroutines();
         animator.SetTrigger("Morir"); // la animación debe estar como trigger
-
         Destroy(gameObject, 1.7f); // da tiempo a la animación antes de desaparecer
     }
 

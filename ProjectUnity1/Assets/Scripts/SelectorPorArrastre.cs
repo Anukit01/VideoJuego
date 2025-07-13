@@ -67,7 +67,8 @@ public class SelectorPorArrastre : MonoBehaviour
         foreach (GameObject unidad in SeleccionadorDeUnidad.Instance.todasLasUnidades)
         {
             if (unidad == null) continue;
-
+            if (unidad.TryGetComponent<Aldeano>(out var aldeano) && aldeano.EstaOcupadoPrivado)
+                continue; // no seleccionarlo
             Vector2 pantalla = Camera.main.WorldToScreenPoint(unidad.transform.position);
             if (selectionBox.Contains(pantalla))
             {

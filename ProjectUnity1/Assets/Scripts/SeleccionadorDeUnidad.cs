@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class SeleccionadorDeUnidad : MonoBehaviour
@@ -8,6 +9,7 @@ public class SeleccionadorDeUnidad : MonoBehaviour
     public List<GameObject> unidadesSeleccionadas = new();
     public List<GameObject> todasLasUnidades = new();
     [SerializeField] private GameObject canvasConstruccion;
+    
 
     private void Awake()
     {
@@ -40,9 +42,13 @@ public class SeleccionadorDeUnidad : MonoBehaviour
 
         Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Collider2D hit = Physics2D.OverlapPoint(mousePos);
-
+       
         if (hit != null && hit.GetComponent<UnidadJugador>() is UnidadJugador unidad)
         {
+            if (unidad.TryGetComponent<Aldeano>(out var aldeano) && aldeano.EstaOcupadoPrivado)
+                return; // no seleccionarlo
+
+
             if (Input.GetKey(KeyCode.LeftShift))
             {
                 AlternarSeleccion(unidad.gameObject);
@@ -74,19 +80,36 @@ public class SeleccionadorDeUnidad : MonoBehaviour
     private void ManejarClickDerecho()
     {
         Vector2 destino = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        RaycastHit2D hit = Physics2D.Raycast(destino, Vector2.zero);
-        GameObject objetivo = hit.collider?.gameObject;
+        Collider2D[] colliders = Physics2D.OverlapPointAll(destino);
 
-        foreach (var unidad in unidadesSeleccionadas)
+        GameObject objetivo = null;
+
+        foreach (var col in colliders)
         {
+            GameObject golpeado = col.gameObject;
+            if (golpeado.GetComponent<Flecha>() != null) continue;
+            if (golpeado.CompareTag("IgnorarClick")) continue;
+
+            if (golpeado.GetComponent<IRecolectable>() != null || golpeado.GetComponent<IAtacable>() != null)
+            {
+                objetivo = golpeado;
+                break;
+            }
+        }
+
+        foreach (var unidad in unidadesSeleccionadas.ToList())
+        {
+            if (unidad.TryGetComponent<Aldeano>(out var aldeano) && aldeano.EstaOcupadoPrivado)
+                continue; // Ignorar si está ocupado
+
             if (unidad.TryGetComponent<IAccionContextual>(out var accionable))
             {
                 if (objetivo != null && objetivo.TryGetComponent<IRecolectable>(out var recurso))
                     accionable.EjecutarAccion(objetivo, recurso.PuntoDeRecoleccion.position);
                 else if (objetivo != null && objetivo.TryGetComponent<IAtacable>(out var atacable))
-                    accionable.EjecutarAccion(objetivo, destino);
+                    accionable.EjecutarAccion(objetivo, destino);              
                 else
-                    accionable.EjecutarAccion(null, destino);
+                    accionable.EjecutarAccion(null, destino);                
             }
             else if (unidad.TryGetComponent<Movimiento>(out var movimiento))
             {
@@ -140,9 +163,11 @@ public class SeleccionadorDeUnidad : MonoBehaviour
     {
         bool hayAldeano = false;
 
+        unidadesSeleccionadas.RemoveAll(unidad => unidad == null); //  limpia referencias destruidas
+
         foreach (var unidad in unidadesSeleccionadas)
         {
-            if (unidad.GetComponent<Aldeano>() != null)
+            if (unidad != null && unidad.GetComponent<Aldeano>() != null)
             {
                 hayAldeano = true;
                 break;
@@ -152,8 +177,11 @@ public class SeleccionadorDeUnidad : MonoBehaviour
         canvasConstruccion.SetActive(hayAldeano);
     }
 
+
     public void Deseleccionar(GameObject unidad)
     {
         CambiarSeleccion(unidad, false);
+        unidadesSeleccionadas.Remove(unidad);
+
     }
 }

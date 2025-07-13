@@ -12,6 +12,9 @@ public class Torre : EdificioBase
     [SerializeField] private float tiempoEntreDisparos = 1.5f;
     private float tiempoUltimoDisparo = 0f;
 
+    [SerializeField] private AudioSource fuenteTorre;
+    [SerializeField] private AudioClip clipFlecha;
+
     protected override void Start()
     {
         InicializarVida(0);
@@ -19,12 +22,7 @@ public class Torre : EdificioBase
         construido = false;
         BeginConstruction();
 
-    }
-    private void OnMouseDown()
-    {
-        vidaVisual.SetActive(!vidaVisual.activeSelf);
-
-    }
+    }    
     public override void CompleteConstruction()
     {
         base.CompleteConstruction();
@@ -42,7 +40,6 @@ public class Torre : EdificioBase
             tiempoUltimoDisparo = Time.time;
         }
     }
-
     private bool PuedeDisparar() => Time.time >= tiempoUltimoDisparo + tiempoEntreDisparos;
 
     private GameObject BuscarObjetivo()
@@ -66,11 +63,18 @@ public class Torre : EdificioBase
         Rigidbody2D rb = proyectil.GetComponent<Rigidbody2D>();
         if (rb != null)
             rb.velocity = direccion * 10f;
-
+        if (fuenteTorre != null && clipFlecha != null)
+        {
+            fuenteTorre.PlayOneShot(clipFlecha);
+        }
         if (proyectil.TryGetComponent<Flecha>(out var flecha))
         {
             flecha.SetDanio(10);
             flecha.SetEmisor(gameObject);
+        }
+        if (fuenteTorre != null && fuenteTorre.isPlaying)
+        {
+            fuenteTorre.Stop();
         }
     }
 
@@ -79,4 +83,12 @@ public class Torre : EdificioBase
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, radioDeteccion);
     }
+
+    public void ActivarVisuales()
+    {
+        if (vidaVisual != null)
+            vidaVisual.SetActive(!vidaVisual.activeSelf);
+
+    }
+
 }

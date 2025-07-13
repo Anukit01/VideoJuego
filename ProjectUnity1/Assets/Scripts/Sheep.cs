@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -16,7 +17,9 @@ public class Sheep : MonoBehaviour, IAtacable
     private bool enHuida = false;
     public bool EnHuida => enHuida;
 
-
+    [SerializeField] private AudioSource fuenteSheep;
+    [SerializeField] private AudioClip clipGolpeada;
+    [SerializeField] private AudioClip clipMorir;
 
 
     void Start()
@@ -30,6 +33,7 @@ public class Sheep : MonoBehaviour, IAtacable
     {
         vida -= cantidad;
         StartCoroutine(FlashRojo());
+        ReproducirUna(clipGolpeada);
         HuirDelGolpe(Camera.main.transform.position);
         if (vida <= 0)
             Morir();
@@ -58,15 +62,18 @@ public class Sheep : MonoBehaviour, IAtacable
 
     private void Morir()
     {
+        if (fuenteSheep != null && clipMorir != null)
+        {
+            ReproducirUna(clipMorir);
+        }
         GameObject carne = Instantiate(carnePrefab, transform.position, Quaternion.identity); ;
 
         // Aldeanos seleccionados van automáticamente
-        foreach (var unidad in FindObjectOfType<SeleccionadorDeUnidad>().unidadesSeleccionadas)
+        foreach (var unidad in FindObjectOfType<SeleccionadorDeUnidad>().unidadesSeleccionadas.ToList())
         {
             if (unidad.TryGetComponent<Aldeano>(out Aldeano aldeano))
                 aldeano.EjecutarAccion(carne, carne.transform.position);
         }
-
         Destroy(gameObject);
     }
     private IEnumerator MoverConHuida(Vector2 destino)
@@ -81,5 +88,22 @@ public class Sheep : MonoBehaviour, IAtacable
 
         enHuida = false;
     }
+    public void ReproducirLoop(AudioClip clip)
+    {
+        if (fuenteSheep == null) return;
+        fuenteSheep.clip = clip;
+        fuenteSheep.loop = true;
+        fuenteSheep.Play();
+    }
+    public void ReproducirUna(AudioClip clip)
+    {
+        if (fuenteSheep == null || clip == null) return;
+        fuenteSheep.Stop();           
+        fuenteSheep.clip = clip;
+        fuenteSheep.loop = false;
+        fuenteSheep.spatialBlend = 0.5f; // 2D sound
+        fuenteSheep.PlayOneShot(clip);
+    }
+
 
 }

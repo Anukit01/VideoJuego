@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -13,7 +14,16 @@ public class Aldeano : UnidadJugador
     [SerializeField] private GameObject visualMadera;
     [SerializeField] private GameObject visualCarne;
     [SerializeField] private GameObject visualBolsaOro;
+
+    [SerializeField] private AudioSource fuenteAldeano;
+    [SerializeField] private AudioClip clipTalado;
+    [SerializeField] private AudioClip clipConstruyo;
+    [SerializeField] private AudioClip clipMinando;
+
+    [SerializeField] private GameObject barraVida;
     public GameObject VisualBolsaOro => visualBolsaOro;
+    public bool EsAtacable => !EstaOcupadoPrivado;
+    public bool EstaOcupadoPrivado { get; private set; }
 
     public RecoleccionTemporal CargaRecoleccion = new();
     private IRecolectable ultimoRecurso;
@@ -26,7 +36,7 @@ public class Aldeano : UnidadJugador
         ataque = 5;
         defensa = 5;
         velocidad = 2;
-
+        EstaOcupadoPrivado = false;
         base.Start();
 
     }
@@ -125,7 +135,20 @@ public class Aldeano : UnidadJugador
 
         estadoActual = EstadoAldeano.Talando;
         animator.SetBool("Talar", true);
+        if (fuenteAldeano != null)
+        {
+            ReproducirLoop(clipTalado);
+
+        }
+
         yield return StartCoroutine(recurso.EjecutarRecoleccion(this));
+
+        if (fuenteAldeano != null && fuenteAldeano.isPlaying)
+            fuenteAldeano.Stop();
+
+        animator.SetBool("Talar", false);
+        estadoActual = EstadoAldeano.Idle;
+
     }
 
     public void TerminarRecoleccion()
@@ -208,49 +231,84 @@ public class Aldeano : UnidadJugador
     {
         estadoActual = EstadoAldeano.Atacando;
 
-        float distanciaAtaque = 1.3f; // Distancia deseada para el ataque
-        float stoppingDistanceOriginal = agent.stoppingDistance;
-        agent.stoppingDistance = distanciaAtaque;
-
+        float distanciaAtaque = 2f;
+        float tolerancia = 0.35f;
+        float stoppingOriginal = agent.stoppingDistance;
+        agent.stoppingDistance = distanciaAtaque * 0.5f;
         agent.SetDestination(objetivo.transform.position);
 
-        yield return new WaitUntil(() => Vector2.Distance(transform.position, objetivo.transform.position) <= distanciaAtaque + 0.05f);
+        yield return new WaitUntil(() =>
+            !agent.pathPending && agent.hasPath &&
+            agent.remainingDistance <= distanciaAtaque + tolerancia);
 
-        animator.SetBool("Talar", true);
-
+        agent.SetDestination(transform.position);
+      
+        
         while (objetivo != null && atacable != null && atacable.EstaVivo())
         {
-            var orientador = GetComponent<OrientadorVisual>();
-            if (orientador != null)
+            Vector2 direccion = objetivo.transform.position - transform.position;
+
+
+            if (TryGetComponent<OrientadorVisual>(out var orientador))
                 orientador.GirarVisual(objetivo.transform.position);
-            yield return new WaitForSeconds(0.2f); // Espera el "impacto" de la animación
+
+            if (!animator.GetBool("Talar"))
+                animator.SetBool("Talar", true);
+            
+
+            yield return new WaitForSeconds(0.2f); // impacto
             atacable.RecibirDanio(ataque, gameObject);
-            yield return new WaitForSeconds(1f - 0.2f);
+            
+            yield return new WaitForSeconds(0.15f);
         }
 
         animator.SetBool("Talar", false);
         estadoActual = EstadoAldeano.Idle;
-        agent.stoppingDistance = stoppingDistanceOriginal; // Restaurar valor original
+        agent.stoppingDistance = stoppingOriginal;
     }
 
     private IEnumerator AtacarOvejaRutina()
     {
-        float distanciaAtaque = 1.3f; // Ajusta este valor según tu animación  
-        float stoppingDistanceOriginal = agent.stoppingDistance;
-        agent.stoppingDistance = distanciaAtaque;
+        float distanciaAtaque = 2f;
+        float tolerancia = 0.3f;
+        float stoppingOriginal = agent.stoppingDistance;
+        agent.stoppingDistance = distanciaAtaque * 0.5f;
 
-        // Moverse hacia la oveja hasta estar a la distancia adecuada  
+        // Primer destino: oveja
         agent.SetDestination(ovejaActual.transform.position);
-        yield return new WaitUntil(() => ovejaActual != null && Vector2.Distance(transform.position, ovejaActual.transform.position) <= distanciaAtaque + 0.05f);
 
+        yield return new WaitUntil(() =>
+            ovejaActual != null &&
+            !agent.pathPending &&
+            agent.hasPath &&
+            agent.remainingDistance <= distanciaAtaque + tolerancia);
+
+        yield return new WaitUntil(() => agent.velocity.magnitude <= 0.1f);
+
+        // Bucle de combate y seguimiento
         while (ovejaActual != null && ovejaActual.vida > 0)
         {
+            // Si la oveja se aleja, volver a perseguir
+            if (Vector2.Distance(transform.position, ovejaActual.transform.position) > distanciaAtaque + tolerancia ||
+                agent.velocity.magnitude > 0.1f)
+            {
+                agent.SetDestination(ovejaActual.transform.position);
+                yield return new WaitUntil(() =>
+                    Vector2.Distance(transform.position, ovejaActual.transform.position) <= distanciaAtaque + tolerancia &&
+                    agent.velocity.magnitude <= 0.1f);
+            }
+
+            //  Orientar visual
             var orientador = GetComponent<OrientadorVisual>();
             if (orientador != null)
-                orientador.GirarVisual(ovejaActual.transform.position);   
+                orientador.GirarVisual(ovejaActual.transform.position);
+
+            // Animar y aplicar daño
             animator.SetBool("Talar", true);
-            yield return new WaitForSeconds(0.3f);
+            yield return new WaitForSeconds(0.25f);
             ovejaActual.RecibirDanio(ataque, gameObject);
+
+            animator.SetBool("Talar", false);
 
             yield return new WaitUntil(() => ovejaActual == null || !ovejaActual.EnHuida);
 
@@ -260,11 +318,19 @@ public class Aldeano : UnidadJugador
             yield return new WaitForSeconds(1f);
         }
 
-        animator.SetBool("Talar", false);
+        //  Finalizar
         estadoActual = EstadoAldeano.Idle;
-        agent.stoppingDistance = stoppingDistanceOriginal; // Restaurar valor original  
-    }
+        agent.stoppingDistance = stoppingOriginal;
 
+        if (ovejaActual == null)
+        {
+            GameObject carne = GameObject.FindObjectsOfType<Carne>()
+                .FirstOrDefault(c => Vector2.Distance(transform.position, c.transform.position) < 2f)?.gameObject;
+
+            if (carne != null)
+                EjecutarAccion(carne, carne.transform.position);
+        }
+    }
     private IEnumerator RecolectarOroRutina(Oro mina)
     {
         estadoActual = EstadoAldeano.Recolectando;
@@ -272,12 +338,28 @@ public class Aldeano : UnidadJugador
 
         yield return new WaitUntil(() => !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance);
 
+
         spriteRenderer.enabled = false;
         mina.MostrarVisualActiva();
+        barraVida.SetActive(false); 
 
+        if (fuenteAldeano != null && clipMinando != null)
+        {
+            ReproducirLoop(clipMinando);
+        }
+      
+        EstaOcupadoPrivado = true;
+      
         yield return new WaitForSeconds(8f);
+       
+        EstaOcupadoPrivado = false;
+        barraVida.SetActive(true);
 
         mina.Recolectar(this);
+
+        if (fuenteAldeano != null)
+            fuenteAldeano.Stop();
+
         if (mina.cantidad > 0)
             mina.RevertirVisualActiva();
         else
@@ -348,10 +430,19 @@ public class Aldeano : UnidadJugador
                 // Reemplazo 'objetivo.transform.position' con 'punto.position'  
             }
             nuevoEdificio.BeginConstruction(); // activa visual de construcción
-            animator.SetBool("Construir", true);
+           
             estadoActual = EstadoAldeano.Construyendo;
+        animator.SetBool("Construir", true);
 
-            float tiempoEntreConstrucciones = 1.2f;
+        if (fuenteAldeano != null && clipConstruyo != null)
+        {
+           ReproducirLoop(clipConstruyo);
+        }
+
+
+
+
+        float tiempoEntreConstrucciones = 1.2f;
             int cantidadConstruccion = 5;
             if (edificio.TryGetComponent<EdificioBase>(out var nuevoEdificio1))
             {
@@ -368,6 +459,8 @@ public class Aldeano : UnidadJugador
                 }
             
             animator.SetBool("Construir", false); // finalizar animación
+            if (fuenteAldeano != null && fuenteAldeano.isPlaying)
+                fuenteAldeano.Stop();
         }
             
            
@@ -405,6 +498,10 @@ public class Aldeano : UnidadJugador
         nuevoEdificio.BeginConstruction();
         animator.SetBool("Construir", true);
         estadoActual = EstadoAldeano.Construyendo;
+        if (fuenteAldeano != null && clipConstruyo != null)
+        {
+            ReproducirLoop(clipConstruyo);
+        }
 
         float tiempoEntreConstrucciones = 1.2f;
         int cantidadConstruccion = 5;
@@ -417,9 +514,20 @@ public class Aldeano : UnidadJugador
             nuevoEdificio.SumarVida(cantidadConstruccion);
             yield return new WaitForSeconds(tiempoEntreConstrucciones);
         }
-
+        if (fuenteAldeano != null && fuenteAldeano.isPlaying)
+            fuenteAldeano.Stop();
         animator.SetBool("Construir", false); // finalizar animación
         estadoActual = EstadoAldeano.Idle;
     }
+
+    public void ReproducirLoop(AudioClip clip)
+    {
+        if (fuenteAldeano == null) return;
+        fuenteAldeano.clip = clip;
+        fuenteAldeano.loop = true;
+        fuenteAldeano.Play();
+    }
+
+
 }
 

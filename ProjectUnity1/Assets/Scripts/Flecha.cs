@@ -54,7 +54,7 @@ public class Flecha : MonoBehaviour
     private System.Collections.IEnumerator AplicarDanioConRetardo(IAtacable atacable)
     {
         yield return new WaitForSeconds(0.15f); // Ajusta el tiempo según la animación de impacto
-        atacable.RecibirDanio(danio, gameObject);
+        atacable.RecibirDanio(danio, emisor);
         Destroy(gameObject);
     }
 }

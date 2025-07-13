@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class CrearUnidad : MonoBehaviour
 {
@@ -8,6 +9,12 @@ public class CrearUnidad : MonoBehaviour
     public GameObject unidadAldeano;
     public GameObject unidadCaballero;
     public Transform puntoSpawn; // Punto donde aparece la unidad
+
+    
+    public string zonaActual { get; private set; }
+
+
+
 
     public void CrearAldeano1()
     {
@@ -49,7 +56,7 @@ public class CrearUnidad : MonoBehaviour
     }
     public IEnumerator CrearArquero()
     {
-      
+
         if (unidadArquero == null)
         {
             Debug.LogError("Error: unidadPrefab no está asignado en el Inspector.");
@@ -82,6 +89,7 @@ public class CrearUnidad : MonoBehaviour
 
 
         Instantiate(unidadArquero, puntoSpawn.position, Quaternion.identity);
+        GestionRecrsos.Instance.ActualizarUI();
     }
     public IEnumerator CrearAldeano()
     {
@@ -96,11 +104,11 @@ public class CrearUnidad : MonoBehaviour
             Debug.LogError("Error: el prefab no tiene componente CharactBase.");
             yield break;
         }
-        
+
 
         foreach (var costo in construible.Costos)
         {
-            
+
 
             if (!GestionRecrsos.Instance.TieneRecurso(costo.nombreRecurso, costo.cantidad))
             {
@@ -108,15 +116,18 @@ public class CrearUnidad : MonoBehaviour
                 yield break;
             }
         }
-       
+
         foreach (var costo in construible.Costos)
         {
-            
+
             GestionRecrsos.Instance.GastarRecurso(costo.nombreRecurso, costo.cantidad);
         }
-       
 
+      
         Instantiate(unidadAldeano, puntoSpawn.position, Quaternion.identity);
+        GestionRecrsos.Instance.ActualizarUI();
+
+
     }
 
     public IEnumerator CrearCaballero()
@@ -153,6 +164,9 @@ public class CrearUnidad : MonoBehaviour
 
 
         Instantiate(unidadCaballero, puntoSpawn.position, Quaternion.identity);
+        GestionRecrsos.Instance.ActualizarUI();
+
+
     }
 
 }

@@ -11,6 +11,7 @@ TagManager:
   - Unidad
   - Enemigo
   - Vida
+  - IgnorarClick
   layers:
   - Default
   - TransparentFX
@@ -24,8 +25,8 @@ TagManager:
   - Nivel1
   - Nivel2
   - ElFCastillo
-  - 
-  - 
+  - Proyectiles
+  - Sombra
   - 
   - 
   - 
@@ -48,6 +49,18 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: -1
+  - name: Playa
     uniqueID: 2148528875
+    locked: 0
+  - name: Pasto1
+    uniqueID: 2023899285
+    locked: 0
+  - name: Pasto2
+    uniqueID: 1725984337
+    locked: 0
+  - name: Sprites
+    uniqueID: 3852912425
+    locked: 0
+  - name: proyectiles
+    uniqueID: 2092570233
     locked: 0

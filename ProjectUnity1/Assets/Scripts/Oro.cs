@@ -11,7 +11,10 @@ public class Oro : MonoBehaviour, IRecolectable
     [SerializeField] private Transform puntoDeRecoleccion;
     public Transform PuntoDeRecoleccion => puntoDeRecoleccion;
 
-   
+    [SerializeField] private AudioSource fuenteEdificio;
+    [SerializeField] private AudioClip clipDerrumbarse;
+    
+
     public TipoRecurso Tipo => TipoRecurso.Oro;
 
     public IEnumerator EjecutarRecoleccion(Aldeano aldeano)
@@ -44,18 +47,50 @@ public class Oro : MonoBehaviour, IRecolectable
     {
         visualActiva.SetActive(false);
         visualInactiva.SetActive(true);
+       if (fuenteEdificio != null && fuenteEdificio.isPlaying)
+        {
+            fuenteEdificio.Stop();
+        }
     }
 
     public void MostrarVisualActiva()
     {
         visualInactiva.SetActive(false);
-        visualActiva.SetActive(true);
+        visualActiva.SetActive(true);      
     }
 
-   public void MostrarVisualDestruida()
+    public void MostrarVisualDestruida()
     {
         visualActiva.SetActive(false);
         visualDestruida.SetActive(true);
-        // Podés hacer que el objeto ya no sea seleccionable
+        if (fuenteEdificio != null && clipDerrumbarse != null)
+        {
+            ReproducirUna(clipDerrumbarse);
+            // Podés hacer que el objeto ya no sea seleccionable
+        }
+
+        Destroy(gameObject, 4f); // Destruye el objeto después de 2 segundos
+       
+    }
+    protected void OnDestroy()
+    {
+        BuildingPlacementManager.Instance?.ActualizarNavMesh();
+
+    }
+    public void ReproducirLoop(AudioClip clip)
+    {
+        if (fuenteEdificio == null) return;
+        fuenteEdificio.clip = clip;
+        fuenteEdificio.loop = true;
+        fuenteEdificio.Play();
+    }
+    public void ReproducirUna(AudioClip clip)
+    {
+        if (fuenteEdificio == null || clip == null) return;
+        fuenteEdificio.Stop();
+        fuenteEdificio.clip = clip;
+        fuenteEdificio.loop = false;
+        fuenteEdificio.spatialBlend = 0.5f; // 2D sound
+        fuenteEdificio.PlayOneShot(clip);
     }
 }

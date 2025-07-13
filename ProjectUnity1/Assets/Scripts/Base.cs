@@ -7,6 +7,9 @@ public class Base : EdificioBase
     public GameObject menuEdificio;
     public GameObject vidaVisual;
     [SerializeField] private bool iniciarConstruido = false;
+
+
+   
     protected override void Start()
     {
             
@@ -53,6 +56,7 @@ public class Base : EdificioBase
 
     public override void CompleteConstruction()
     {
+        
         base.CompleteConstruction();
 
         if (vidaVisual != null)
@@ -63,9 +67,23 @@ public class Base : EdificioBase
 
         GestionRecrsos.Instance.SumarPoblación(3);
     }
+    public override void Derribar()
+    {
+       
+        if (!EstáConstruido && gameObject.TryGetComponent<PuntoDeEntrega>(out var puntoEntrega))
+        {
+            puntoEntrega.enabled = false;
+        }
+        GestionRecrsos.Instance.SumarPoblación(-3);
+        ActualizarVidaVisual();
+        GestionRecrsos.Instance.ActualizarUI();
+        
+        base.Derribar();
 
 
-    private void OnMouseDown()
+    }
+
+    public void ActivarVisuales()
     {
         if (vidaVisual != null)
             vidaVisual.SetActive(!vidaVisual.activeSelf);
@@ -76,6 +94,8 @@ public class Base : EdificioBase
         if (menuEdificio != null)
             menuEdificio.SetActive(!menuEdificio.activeSelf);
     }
+
+
 
 }
 

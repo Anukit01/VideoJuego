@@ -5,9 +5,14 @@ public class Movimiento : MonoBehaviour
 {
     private NavMeshAgent agent;
     private Animator animator;
+    public string zonaActual { get; private set; }
+    public string ObtenerZonaActual() => zonaActual;
+
+
 
     [SerializeField] private GameObject indicadorSeleccion;
     [SerializeField] private GameObject indicadorDestino;
+    [SerializeField] private string nombreAreaNavMesh = "Default"; // editable en inspector
 
     private void Awake()
     {
@@ -16,7 +21,7 @@ public class Movimiento : MonoBehaviour
 
         agent.updateRotation = false;
         agent.updateUpAxis = false;
-        agent.stoppingDistance = 0.05f;
+        agent.stoppingDistance = 2f;
         agent.autoBraking = true;
 
         if (indicadorSeleccion != null)
@@ -30,19 +35,22 @@ public class Movimiento : MonoBehaviour
 
         if (indicadorDestino != null)
             indicadorDestino.SetActive(!estaCerca);
-        
+
         OrientadorVisual orientador = GetComponent<OrientadorVisual>();
         if (orientador != null)
             orientador.GirarPorDireccion(agent.velocity);
-
     }
 
     public void MoverA(Vector3 destino)
     {
-        if (NavMesh.SamplePosition(destino, out NavMeshHit hitNav, 0.3f, NavMesh.AllAreas))
+        int areaID = NavMesh.GetAreaFromName(nombreAreaNavMesh);
+        int areaMask = 1 << areaID;
+
+        if (NavMesh.SamplePosition(destino, out NavMeshHit hitNav, 0.3f, areaMask))
             agent.SetDestination(hitNav.position);
         else
-            Debug.LogWarning("Destino fuera del NavMesh");
+            Debug.LogWarning("Destino fuera del NavMesh de la zona actual");
+
     }
 
     public void MostrarIndicadorSeleccion(bool activo)
@@ -57,4 +65,11 @@ public class Movimiento : MonoBehaviour
         if (indicadorDestino != null)
             indicadorDestino.SetActive(false);
     }
+
+ 
+  
+    
+
+ 
+
 }
