@@ -4,9 +4,11 @@ using UnityEngine;
 
 public class Gobling : UnidadEnemigo, IAtacable
 {
-    [SerializeField, Tooltip("Opcional. Si se asignan puntos de patrulla, la unidad patrullará.")]
+    [SerializeField]
     private Transform[] puntosPatrulla = new Transform[0];
     private int indicePatrulla = 0;
+    [SerializeField] private string tipoUnidad = "Gobling";
+
 
     private float tiempoIdleEnPatrulla = 2f;
     private bool esperando = false;
@@ -24,10 +26,12 @@ public class Gobling : UnidadEnemigo, IAtacable
     {
         base.Start();
         animator = GetComponent<Animator>();
-        InicializarVida(100);
-        ataque = 15;
-        velocidad = 3.5f;
+        InicializarVida(80);
+        ataque = 10;
+        defensa = 3;
 
+        GestorEntidades.Instance?.Registrar(tipoUnidad, gameObject);
+        GestorEnemigos.Instance?.RegistrarEnemigo();
 
         if (puntosPatrulla != null && puntosPatrulla.Length > 0)
             MoverHacia(puntosPatrulla[indicePatrulla].position);
@@ -86,11 +90,16 @@ public class Gobling : UnidadEnemigo, IAtacable
         {
 
         indicePatrulla = (indicePatrulla + 1) % puntosPatrulla.Length;
-        MoverHacia(puntosPatrulla[indicePatrulla].position);
+            Vector3 destino = puntosPatrulla[indicePatrulla].position;
+
+            MoverHacia(puntosPatrulla[indicePatrulla].position);
         esperando = false;
 
+            if (TryGetComponent<OrientadorVisual>(out var orientador))
+                orientador.GirarPorDireccion((destino - transform.position).normalized);
+
         }
-        
+
     }
 
 
@@ -139,7 +148,7 @@ public class Gobling : UnidadEnemigo, IAtacable
         float distanciaAtaque = 2f;
         float margen = 0.3f;
         float stoppingOriginal = agent.stoppingDistance;
-
+        animator.SetBool("IsMoving", true);
         agent.stoppingDistance = distanciaAtaque * 0.5f;
         agent.SetDestination(objetivo.transform.position);
 
@@ -247,6 +256,9 @@ public class Gobling : UnidadEnemigo, IAtacable
         {
             ReproducirUna(clipMorir);
         }
+        GestorEntidades.Instance?.Eliminar(tipoUnidad, gameObject);
+        GestorEnemigos.Instance?.NotificarMuerte();
+
         base.Morir();
     }
     public void ReproducirLoop(AudioClip clip)

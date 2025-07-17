@@ -13,7 +13,8 @@ public class Base : EdificioBase
     protected override void Start()
     {
             
-        vidaMaxima = 150;
+        vidaMaxima = 250;
+        defensa = 9;
         if (!iniciarConstruido)
         {
             InicializarVida(0);
@@ -32,10 +33,12 @@ public class Base : EdificioBase
     public override void BeginConstruction()
     {
         base.BeginConstruction();
-        if (gameObject.TryGetComponent<PuntoDeEntrega>(out var puntoEntrega))
+        var puntosEntrega = gameObject.GetComponents<PuntoDeEntrega>();
+        foreach (var punto in puntosEntrega)
         {
-            puntoEntrega.enabled = false;
+            punto.enabled = false;
         }
+
     }
     public override void InicializarVida(int cantidad)
     {
@@ -48,10 +51,7 @@ public class Base : EdificioBase
         vida = Mathf.Clamp(cantidad, 0, vidaMaxima);
         ActualizarVidaVisual();
 
-        if (EstáConstruido && gameObject.TryGetComponent<PuntoDeEntrega>(out var puntoEntrega))
-        {
-            puntoEntrega.enabled = true;
-        }
+       
     }
 
     public override void CompleteConstruction()
@@ -62,9 +62,11 @@ public class Base : EdificioBase
         if (vidaVisual != null)
             vidaVisual.SetActive(false);
 
-        if (gameObject.TryGetComponent<PuntoDeEntrega>(out var puntoEntrega))
-            puntoEntrega.enabled = true; // ahora sí está construido 
-
+        var puntosEntrega = gameObject.GetComponents<PuntoDeEntrega>();
+        foreach (var punto in puntosEntrega)
+        {
+            punto.enabled = true;
+        }
         GestionRecrsos.Instance.SumarPoblación(3);
     }
     public override void Derribar()

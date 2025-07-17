@@ -5,11 +5,14 @@ using UnityEngine;
 
 public class Casa : EdificioBase
 {
+
     public GameObject vidaVisual;
+
     protected override void Start()
     {
         InicializarVida(0);
-        vidaMaxima = 50;
+        vidaMaxima = 80;
+        defensa = 5;
         construido = false;
         BeginConstruction();
         if (vidaVisual != null)
@@ -29,4 +32,5 @@ public class Casa : EdificioBase
             vidaVisual.SetActive(!vidaVisual.activeSelf);
        
     }
+  
 }

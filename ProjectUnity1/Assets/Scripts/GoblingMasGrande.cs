@@ -7,6 +7,7 @@ public class GoblingMasGrande : UnidadEnemigo, IAtacable
     [SerializeField, Tooltip("Opcional. Si se asignan puntos de patrulla, la unidad patrullará.")]
     private Transform[] puntosPatrulla = new Transform[0];
     private int indicePatrulla = 0;
+    [SerializeField] private string tipoUnidad = "Gobling Grande";
 
     private float tiempoIdleEnPatrulla = 2f;
     private bool esperando = false;
@@ -24,11 +25,12 @@ public class GoblingMasGrande : UnidadEnemigo, IAtacable
     {
         base.Start();
         animator = GetComponent<Animator>();
-        InicializarVida(200);
-        ataque = 30;
-        velocidad = 3f;
+        InicializarVida(110);
+        ataque = 19;
+        defensa = 7;
 
-
+        GestorEntidades.Instance?.Registrar(tipoUnidad, gameObject);
+        GestorEnemigos.Instance?.RegistrarEnemigo();
         if (puntosPatrulla != null && puntosPatrulla.Length > 0)
             MoverHacia(puntosPatrulla[indicePatrulla].position);
     }
@@ -77,17 +79,24 @@ public class GoblingMasGrande : UnidadEnemigo, IAtacable
     }
     private IEnumerator EsperarYPasarAlSiguientePunto()
     {
-
         if (puntosPatrulla == null || puntosPatrulla.Length == 0)
             yield break;
 
+        yield return new WaitForSeconds(tiempoIdleEnPatrulla);
 
-            yield return new WaitForSeconds(tiempoIdleEnPatrulla);
-
+        if (puntosPatrulla != null)
+        {
 
             indicePatrulla = (indicePatrulla + 1) % puntosPatrulla.Length;
+            Vector3 destino = puntosPatrulla[indicePatrulla].position;
+
             MoverHacia(puntosPatrulla[indicePatrulla].position);
             esperando = false;
+
+            if (TryGetComponent<OrientadorVisual>(out var orientador))
+                orientador.GirarPorDireccion((destino - transform.position).normalized);
+
+        }
 
     }
 
@@ -134,7 +143,7 @@ public class GoblingMasGrande : UnidadEnemigo, IAtacable
         float distanciaAtaque = 1.5f;
         float margen = 0.3f;
         float stoppingOriginal = agent.stoppingDistance;
-
+        animator.SetBool("IsMoving", true);
         agent.stoppingDistance = distanciaAtaque * 0.5f;
         agent.SetDestination(objetivo.transform.position);
 
@@ -238,6 +247,9 @@ public class GoblingMasGrande : UnidadEnemigo, IAtacable
         {
             ReproducirUna(clipMorir, 1f, 0.5f);
         }
+        GestorEntidades.Instance?.Eliminar(tipoUnidad, gameObject);
+        GestorEnemigos.Instance?.NotificarMuerte();
+
         base.Morir();
     }
 }

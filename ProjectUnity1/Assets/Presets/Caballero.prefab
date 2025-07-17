@@ -497,6 +497,13 @@ MonoBehaviour:
   defensa: 0
   velocidad: 0
   respondeAlAtaque: 1
+  costos:
+  - nombreRecurso: Alimento
+    cantidad: 35
+  - nombreRecurso: Madera
+    cantidad: 30
+  - nombreRecurso: Oro
+    cantidad: 10
   fuenteCaballero: {fileID: 6647865652220075871}
   clipGolpear: {fileID: 8300000, guid: bfc3bbb58961e5c46866b05733f0c515, type: 3}
   clipMorir: {fileID: 8300000, guid: 41921e5031afd1c448aa3edb0d77494f, type: 3}

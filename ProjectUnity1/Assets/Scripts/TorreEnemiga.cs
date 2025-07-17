@@ -16,20 +16,22 @@ public class TorreEnemiga : EntidadBase
     [SerializeField] protected GameObject visualConstruido;
     [SerializeField] protected GameObject visualDerribado;
 
-    [SerializeField] private AudioSource fuenteTorre;
+    [SerializeField] private AudioSource fuenteEdificio;
     [SerializeField] private AudioClip clipFlecha;
+    [SerializeField] private AudioClip clipDerrumbarse;
 
-    public int defensa = 5;
-    public int ataque = 10;
+    public int defensa = 12;
+    public int ataque = 14;
 
     protected bool construido = false;
     public bool EstáConstruido => construido;
     protected override void Start()
     {
-        vida = 100; 
-        vidaMaxima = 100;
-        defensa = 5;    
-        construido = true;  
+        vida = 160;
+        vidaMaxima = 160;
+        ataque = 14;
+        defensa = 6;
+        construido = true;
         MostrarSolo(visualConstruido);
 
     }
@@ -51,7 +53,7 @@ public class TorreEnemiga : EntidadBase
         }
     }
 
-    private bool PuedeDisparar() => Time.time >= tiempoUltimoDisparo + tiempoEntreDisparos; 
+    private bool PuedeDisparar() => Time.time >= tiempoUltimoDisparo + tiempoEntreDisparos;
 
     private GameObject BuscarObjetivo()
     {
@@ -70,23 +72,24 @@ public class TorreEnemiga : EntidadBase
         if (proyectilPrefab == null || puntoDisparo == null) return;
 
         Vector2 direccion = (objetivo.transform.position - puntoDisparo.position).normalized;
-        GameObject proyectil = Instantiate(proyectilPrefab, puntoDisparo.position, Quaternion.identity);
-        proyectil.layer = LayerMask.NameToLayer("Proyectiles"); 
+        float angulo = Mathf.Atan2(direccion.y, direccion.x) * Mathf.Rad2Deg;
+        GameObject proyectil = Instantiate(proyectilPrefab, puntoDisparo.position, Quaternion.Euler(0f, 0f, angulo));
+        proyectil.layer = LayerMask.NameToLayer("Proyectiles");
         Rigidbody2D rb = proyectil.GetComponent<Rigidbody2D>();
         if (rb != null)
             rb.velocity = direccion * 10f;
-        if (fuenteTorre != null && clipFlecha != null)
+        if (fuenteEdificio != null && clipFlecha != null)
         {
-            fuenteTorre.PlayOneShot(clipFlecha);
-        }   
+            fuenteEdificio.PlayOneShot(clipFlecha);
+        }
         if (proyectil.TryGetComponent<Flecha>(out var flecha))
         {
             flecha.SetDanio(ataque);
             flecha.SetEmisor(gameObject);
         }
-        if (fuenteTorre != null && fuenteTorre.isPlaying)
+        if (fuenteEdificio != null && fuenteEdificio.isPlaying)
         {
-            fuenteTorre.Stop();
+            fuenteEdificio.Stop();
         }
     }
 
@@ -112,15 +115,16 @@ public class TorreEnemiga : EntidadBase
     public void Derribar()
     {
         MostrarSolo(visualDerribado);
-        construido = false; 
+        construido = false;
 
         ActualizarVidaVisual();
-        
+
+        Destroy(gameObject, 3f);
+
+    }
+    private void OnDestroy()
+    {
         BuildingPlacementManager.Instance?.ActualizarNavMesh();
-
-        Destroy(gameObject, 3f); 
-
-
     }
     protected void MostrarSolo(GameObject activo)
     {      
@@ -128,6 +132,34 @@ public class TorreEnemiga : EntidadBase
         visualDerribado.SetActive(activo == visualDerribado);
 
     }
-   
+    protected override void Morir()
+    {
+        if (fuenteEdificio != null && clipDerrumbarse != null)
+        {
+            ReproducirUna(clipDerrumbarse);
+        }
+        Derribar();
+        base.Morir();
+        Destroy(gameObject, 3f);
+        BuildingPlacementManager.Instance?.ActualizarNavMesh();
+
+    }
+    public void ReproducirLoop(AudioClip clip)
+    {
+        if (fuenteEdificio == null) return;
+        fuenteEdificio.clip = clip;
+        fuenteEdificio.loop = true;
+        fuenteEdificio.Play();
+    }
+    public void ReproducirUna(AudioClip clip)
+    {
+        if (fuenteEdificio == null || clip == null) return;
+        fuenteEdificio.Stop();
+        fuenteEdificio.clip = clip;
+        fuenteEdificio.loop = false;
+        fuenteEdificio.spatialBlend = 0.5f; // 2D sound
+        fuenteEdificio.PlayOneShot(clip);
+    }
+
 }
 

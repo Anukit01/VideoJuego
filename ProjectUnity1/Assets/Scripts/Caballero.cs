@@ -16,14 +16,14 @@ public class Caballero : UnidadJugador
 
     public bool EstaAtacando() => atacando;
     [SerializeField] private float radioDeteccion = 4f;
+    [SerializeField] private string tipoUnidad = "Caballero";
 
     protected override void Start()
     {
-        InicializarVida(150);
+        InicializarVida(120);
         
-        ataque = 20;
-        defensa = 10;
-        velocidad = 5;
+        ataque = 10;
+        defensa = 8;
         base.Start();
            
         rutinaAutodefensa = StartCoroutine(RutinaAutodefensa());
@@ -194,6 +194,7 @@ public class Caballero : UnidadJugador
         {
             ReproducirUna(clipMorir);
         }
+        GestorEntidades.Instance?.Eliminar(tipoUnidad, gameObject);
         base.Morir();
     }
 

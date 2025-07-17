@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 3203675235192713302}
   - component: {fileID: 1679928082107707459}
   - component: {fileID: 4839852837709374674}
+  - component: {fileID: 1628071016092895447}
   m_Layer: 0
   m_Name: GobligMasGrande
   m_TagString: Enemigo
@@ -259,6 +260,18 @@ MonoBehaviour:
   offsetDelante: 10
   offsetDetras: -10
   margin: 0.5
+--- !u!114 &1628071016092895447
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7720769828145024543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5596e98a41fced44a2ce6a9d5713dbd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8498303547208419615
 GameObject:
   m_ObjectHideFlags: 0

@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Oro : MonoBehaviour, IRecolectable
 {
-    public int cantidad = 30;
+    public int cantidad = 90;
     public GameObject oroRecolectadoPrefab;
     [SerializeField] private GameObject visualInactiva;
     [SerializeField] private GameObject visualActiva;
@@ -19,7 +19,7 @@ public class Oro : MonoBehaviour, IRecolectable
 
     public IEnumerator EjecutarRecoleccion(Aldeano aldeano)
     {
-        yield return new WaitForSeconds(0.5f); // Animación opcional
+        yield return new WaitForSeconds(0.5f);
         Recolectar(aldeano);
         aldeano.TerminarRecoleccion();
     }

@@ -6,6 +6,18 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
+    path: Assets/Scenes/Menu.unity
+    guid: 4b06dcbf8f154514bba9298ed5de0bb1
+  - enabled: 1
+    path: Assets/Scenes/MapaGrande.unity
     guid: 2cda990e2423bbf4892e6590ba056729
+  - enabled: 1
+    path: Assets/Scenes/MapaChico.unity
+    guid: c106ba124778fb047992236101bfe464
+  - enabled: 1
+    path: Assets/Scenes/MapaChicoDif.unity
+    guid: 2929f5a5350db0946832ca575668d8e1
+  - enabled: 1
+    path: Assets/Scenes/MapaGrandeDif.unity
+    guid: 3b01f518479c5464ba5eb6851ea9a75d
   m_configObjects: {}

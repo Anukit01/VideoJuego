@@ -43,6 +43,7 @@ public class SeleccionadorDeUnidad : MonoBehaviour
         Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Collider2D hit = Physics2D.OverlapPoint(mousePos);
        
+        
         if (hit != null && hit.GetComponent<UnidadJugador>() is UnidadJugador unidad)
         {
             if (unidad.TryGetComponent<Aldeano>(out var aldeano) && aldeano.EstaOcupadoPrivado)
@@ -184,4 +185,6 @@ public class SeleccionadorDeUnidad : MonoBehaviour
         unidadesSeleccionadas.Remove(unidad);
 
     }
+
+
 }

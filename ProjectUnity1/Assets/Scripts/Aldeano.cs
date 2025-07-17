@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -19,11 +20,16 @@ public class Aldeano : UnidadJugador
     [SerializeField] private AudioClip clipTalado;
     [SerializeField] private AudioClip clipConstruyo;
     [SerializeField] private AudioClip clipMinando;
+    [SerializeField] private AudioClip clipMorir;
 
     [SerializeField] private GameObject barraVida;
+    [SerializeField] private string tipoUnidad = "Aldeano";
+
     public GameObject VisualBolsaOro => visualBolsaOro;
+    public GameObject VisualCarne => visualCarne;
     public bool EsAtacable => !EstaOcupadoPrivado;
     public bool EstaOcupadoPrivado { get; private set; }
+
 
     public RecoleccionTemporal CargaRecoleccion = new();
     private IRecolectable ultimoRecurso;
@@ -31,11 +37,11 @@ public class Aldeano : UnidadJugador
 
     protected override void Start()
     {
-        InicializarVida(70);
+        InicializarVida(75);
+        
       
         ataque = 5;
-        defensa = 5;
-        velocidad = 2;
+        defensa = 3;        
         EstaOcupadoPrivado = false;
         base.Start();
 
@@ -62,6 +68,14 @@ public class Aldeano : UnidadJugador
         if (objetivo.TryGetComponent<Oro>(out var mina))
         {
             StartCoroutine(RecolectarOroRutina(mina));
+            SeleccionadorDeUnidad.Instance.DeseleccionarTodas();
+            return;
+        }
+
+        if (objetivo.TryGetComponent<Carne>(out var carne))
+        {
+            ultimoRecurso = carne;
+            StartCoroutine(MoverYRecolectarCarne(carne));
             SeleccionadorDeUnidad.Instance.DeseleccionarTodas();
             return;
         }
@@ -127,28 +141,22 @@ public class Aldeano : UnidadJugador
         ultimoRecurso = null;
         ovejaActual = null;
     }
-
-    private IEnumerator MoverYRecolectar(IRecolectable recurso, Transform punto)
+    private IEnumerator MoverYRecolectarCarne(Carne carne)
     {
-        agent.SetDestination(punto.position);
-        yield return new WaitUntil(() => !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance);
+        agent.SetDestination(carne.transform.position);
 
-        estadoActual = EstadoAldeano.Talando;
-        animator.SetBool("Talar", true);
-        if (fuenteAldeano != null)
-        {
-            ReproducirLoop(clipTalado);
+        float tolerancia = 0.2f; // margen para evitar bloqueos por distancia exacta
 
-        }
+        yield return new WaitUntil(() =>
+            Vector3.Distance(transform.position, carne.transform.position) <= carne.radioRecoleccion + tolerancia &&
+            !agent.pathPending &&
+            agent.velocity.magnitude <= 0.1f);
 
-        yield return StartCoroutine(recurso.EjecutarRecoleccion(this));
+        estadoActual = EstadoAldeano.Recolectando;
 
-        if (fuenteAldeano != null && fuenteAldeano.isPlaying)
-            fuenteAldeano.Stop();
+        yield return StartCoroutine(carne.EjecutarRecoleccion(this));
 
-        animator.SetBool("Talar", false);
         estadoActual = EstadoAldeano.Idle;
-
     }
 
     public void TerminarRecoleccion()
@@ -203,17 +211,21 @@ public class Aldeano : UnidadJugador
         {
             if (ultimoRecurso is Oro oro)
                 StartCoroutine(RecolectarOroRutina(oro));
+            else if (ultimoRecurso is Carne carne)
+                StartCoroutine(MoverYRecolectarCarne(carne));
+
             else
                 StartCoroutine(MoverYRecolectar(ultimoRecurso, ultimoRecurso.PuntoDeRecoleccion));
         }
     }
-
+    
     private bool PuedeVolverARecolectar(IRecolectable recurso)
-    {
+    {       
         return recurso switch
         {
             Tree tree => tree.maderaDisponible > 0,
             Oro oro => oro.cantidad > 0,
+            Carne carne => carne.cantidad > 0,
             _ => false
         };
     }
@@ -227,46 +239,6 @@ public class Aldeano : UnidadJugador
         agent.SetDestination(oveja.transform.position);
         StartCoroutine(AtacarOvejaRutina());
     }
-    private IEnumerator CombatirEntidadRutina(GameObject objetivo, IAtacable atacable)
-    {
-        estadoActual = EstadoAldeano.Atacando;
-
-        float distanciaAtaque = 2f;
-        float tolerancia = 0.35f;
-        float stoppingOriginal = agent.stoppingDistance;
-        agent.stoppingDistance = distanciaAtaque * 0.5f;
-        agent.SetDestination(objetivo.transform.position);
-
-        yield return new WaitUntil(() =>
-            !agent.pathPending && agent.hasPath &&
-            agent.remainingDistance <= distanciaAtaque + tolerancia);
-
-        agent.SetDestination(transform.position);
-      
-        
-        while (objetivo != null && atacable != null && atacable.EstaVivo())
-        {
-            Vector2 direccion = objetivo.transform.position - transform.position;
-
-
-            if (TryGetComponent<OrientadorVisual>(out var orientador))
-                orientador.GirarVisual(objetivo.transform.position);
-
-            if (!animator.GetBool("Talar"))
-                animator.SetBool("Talar", true);
-            
-
-            yield return new WaitForSeconds(0.2f); // impacto
-            atacable.RecibirDanio(ataque, gameObject);
-            
-            yield return new WaitForSeconds(0.15f);
-        }
-
-        animator.SetBool("Talar", false);
-        estadoActual = EstadoAldeano.Idle;
-        agent.stoppingDistance = stoppingOriginal;
-    }
-
     private IEnumerator AtacarOvejaRutina()
     {
         float distanciaAtaque = 2f;
@@ -310,7 +282,10 @@ public class Aldeano : UnidadJugador
 
             animator.SetBool("Talar", false);
 
-            yield return new WaitUntil(() => ovejaActual == null || !ovejaActual.EnHuida);
+            yield return new WaitUntil(() =>
+              ovejaActual == null ||
+              Vector2.Distance(transform.position, ovejaActual.transform.position) <= distanciaAtaque + tolerancia);
+
 
             if (ovejaActual == null || ovejaActual.vida <= 0)
                 break;
@@ -331,6 +306,70 @@ public class Aldeano : UnidadJugador
                 EjecutarAccion(carne, carne.transform.position);
         }
     }
+ 
+    private IEnumerator MoverYRecolectar(IRecolectable recurso, Transform punto)
+    {
+        agent.SetDestination(punto.position);
+        yield return new WaitUntil(() => !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance);
+
+        estadoActual = EstadoAldeano.Talando;
+        animator.SetBool("Talar", true);
+        if (fuenteAldeano != null)
+        {
+            ReproducirLoop(clipTalado);
+
+        }
+
+        yield return StartCoroutine(recurso.EjecutarRecoleccion(this));
+
+        if (fuenteAldeano != null && fuenteAldeano.isPlaying)
+            fuenteAldeano.Stop();
+
+        animator.SetBool("Talar", false);
+        estadoActual = EstadoAldeano.Idle;
+
+    }
+
+    private IEnumerator CombatirEntidadRutina(GameObject objetivo, IAtacable atacable)
+    {
+        estadoActual = EstadoAldeano.Atacando;
+
+        float distanciaAtaque = 2f;
+        float tolerancia = 0.35f;
+        float stoppingOriginal = agent.stoppingDistance;
+        agent.stoppingDistance = distanciaAtaque * 0.5f;
+        agent.SetDestination(objetivo.transform.position);
+
+        yield return new WaitUntil(() =>
+            !agent.pathPending && agent.hasPath &&
+            agent.remainingDistance <= distanciaAtaque + tolerancia);
+
+        agent.SetDestination(transform.position);
+      
+        
+        while (objetivo != null && atacable != null && atacable.EstaVivo())
+        {
+            Vector2 direccion = objetivo.transform.position - transform.position;
+
+
+            if (TryGetComponent<OrientadorVisual>(out var orientador))
+                orientador.GirarVisual(objetivo.transform.position);
+
+            if (!animator.GetBool("Talar"))
+                animator.SetBool("Talar", true);
+            
+
+            yield return new WaitForSeconds(0.2f); // impacto
+            atacable.RecibirDanio(ataque, gameObject);
+            
+            yield return new WaitForSeconds(0.15f);
+        }
+
+        animator.SetBool("Talar", false);
+        estadoActual = EstadoAldeano.Idle;
+        agent.stoppingDistance = stoppingOriginal;
+    }
+
     private IEnumerator RecolectarOroRutina(Oro mina)
     {
         estadoActual = EstadoAldeano.Recolectando;
@@ -526,6 +565,31 @@ public class Aldeano : UnidadJugador
         fuenteAldeano.clip = clip;
         fuenteAldeano.loop = true;
         fuenteAldeano.Play();
+    }
+    public void ReproducirUna(AudioClip clip)
+    {
+        if (fuenteAldeano == null || clip == null) return;
+        fuenteAldeano.Stop();
+        fuenteAldeano.clip = clip;
+        fuenteAldeano.loop = false;
+        fuenteAldeano.spatialBlend = 0.5f; // 2D sound
+        fuenteAldeano.PlayOneShot(clip);
+    }
+    protected override void Morir()
+    {
+        if (fuenteAldeano != null && fuenteAldeano.isPlaying)
+            fuenteAldeano.Stop();
+        if (fuenteAldeano != null && clipMorir != null)
+        {
+            ReproducirUna(clipMorir);
+        }
+            if (CargaRecoleccion.visual != null)
+            CargaRecoleccion.visual.SetActive(false);
+        GestorEntidades.Instance?.Eliminar(tipoUnidad, gameObject);
+        Destroy(gameObject);
+
+
+        base.Morir();
     }
 
 

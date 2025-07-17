@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
@@ -12,14 +13,15 @@ public class Sheep : MonoBehaviour, IAtacable
     public GameObject carnePrefab; // Prefab con script Carne y Collider
     private SeleccionadorDeUnidad seleccionador;
     private Animator animator;
-    [SerializeField] private float distanciaHuida = 1.5f;
-    [SerializeField] private float velocidadHuida = 2f;
+    [SerializeField] private float distanciaHuida = 0.5f;
+    [SerializeField] private float velocidadHuida = 1f;
     private bool enHuida = false;
     public bool EnHuida => enHuida;
 
+    public static Vector3 UltimaPosicionDeOvejaMuerta;
+
     [SerializeField] private AudioSource fuenteSheep;
     [SerializeField] private AudioClip clipGolpeada;
-    [SerializeField] private AudioClip clipMorir;
 
 
     void Start()
@@ -34,9 +36,16 @@ public class Sheep : MonoBehaviour, IAtacable
         vida -= cantidad;
         StartCoroutine(FlashRojo());
         ReproducirUna(clipGolpeada);
-        HuirDelGolpe(Camera.main.transform.position);
+              
+
         if (vida <= 0)
-            Morir();
+        {
+            Morir(); // no hay huida si ya está muerta
+            return;
+        }
+
+        HuirDelGolpe(atacante.transform.position); // solo si sigue viva
+      
     }
     private void HuirDelGolpe(Vector3 origen)
     {
@@ -62,20 +71,18 @@ public class Sheep : MonoBehaviour, IAtacable
 
     private void Morir()
     {
-        if (fuenteSheep != null && clipMorir != null)
-        {
-            ReproducirUna(clipMorir);
-        }
+     
         GameObject carne = Instantiate(carnePrefab, transform.position, Quaternion.identity); ;
 
         // Aldeanos seleccionados van automáticamente
         foreach (var unidad in FindObjectOfType<SeleccionadorDeUnidad>().unidadesSeleccionadas.ToList())
         {
             if (unidad.TryGetComponent<Aldeano>(out Aldeano aldeano))
-                aldeano.EjecutarAccion(carne, carne.transform.position);
-        }
+                aldeano.EjecutarAccion(carne, carne.transform.position);              
+        }  
+
         Destroy(gameObject);
-    }
+}
     private IEnumerator MoverConHuida(Vector2 destino)
     {
         animator.SetTrigger("Saltar");

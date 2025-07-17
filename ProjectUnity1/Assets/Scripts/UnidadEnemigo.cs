@@ -12,6 +12,8 @@ public abstract class UnidadEnemigo : UnidadBase
     protected override void Start()
 
     {
+        base.Start();
+        GestorEntidades.Instance?.Registrar("UnidadJugador", gameObject);
         agent = GetComponent<NavMeshAgent>();
         agent.updateRotation = false;
         agent.updateUpAxis = false;

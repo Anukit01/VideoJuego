@@ -16,7 +16,19 @@ public class BuildingPlacementManager : MonoBehaviour
 
     private bool placing = false;
 
-    void Awake() => Instance = this;
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
     void Update()
     {
         if (!placing || ghostInstance == null) return;
@@ -51,7 +63,11 @@ public class BuildingPlacementManager : MonoBehaviour
 
     public void ActualizarNavMesh()
     {
-        StartCoroutine(RebuildNavmeshConDelay());
+        if (this != null)
+        {
+            StartCoroutine(RebuildNavmeshConDelay());
+        }
+        
     }
 
     private IEnumerator RebuildNavmeshConDelay()

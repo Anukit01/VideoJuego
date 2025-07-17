@@ -13,12 +13,14 @@ public class Arquero : UnidadJugador
 
     [Header("Combate")]
     [SerializeField] private GameObject proyectilPrefab;
-    [SerializeField] private float radioDeteccion = 3f;
+    [SerializeField] private float radioDeteccion = 4.5f;
     [SerializeField] private float tiempoEntreDisparos = 1.5f;
 
     [SerializeField] private AudioSource fuenteArquero;
     [SerializeField] private AudioClip clipGolpear;
     [SerializeField] private AudioClip clipMorir;
+
+    [SerializeField] private string tipoUnidad = "Arquero";
 
     private float tiempoUltimoDisparo = 0f;
     private Coroutine rutinaAtaque;
@@ -30,9 +32,8 @@ public class Arquero : UnidadJugador
     {
         InicializarVida(80);
        
-        ataque = 15;
-        defensa = 5;
-        velocidad = 5;
+        ataque = 18;
+        defensa = 4;
        
         base.Start();
     }
@@ -156,20 +157,20 @@ public class Arquero : UnidadJugador
         rutinaAtaque = null;
     }
 
-    private void Disparar(GameObject objetivo)
-    {
-        puntoDisparoActual = ElegirPuntoDisparo(transform.position, objetivo.transform.position);
-        ActivarAnimacionDisparo(transform.position, objetivo.transform.position);
+    //private void Disparar(GameObject objetivo)
+    //{
+    //    puntoDisparoActual = ElegirPuntoDisparo(transform.position, objetivo.transform.position);
+    //    ActivarAnimacionDisparo(transform.position, objetivo.transform.position);
 
-        Vector2 direccion = (objetivo.transform.position - puntoDisparoActual.position).normalized;
-        float angle = Mathf.Atan2(direccion.y, direccion.x) * Mathf.Rad2Deg;
+    //    Vector2 direccion = (objetivo.transform.position - puntoDisparoActual.position).normalized;
+    //    float angle = Mathf.Atan2(direccion.y, direccion.x) * Mathf.Rad2Deg;
 
-        if (Mathf.Abs(direccion.x) > Mathf.Abs(direccion.y) && TryGetComponent<OrientadorVisual>(out var orientador))
-            orientador.ForzarGiroVisual(direccion.x >= 0);
+    //    if (Mathf.Abs(direccion.x) > Mathf.Abs(direccion.y) && TryGetComponent<OrientadorVisual>(out var orientador))
+    //        orientador.ForzarGiroVisual(direccion.x >= 0);
 
-        StartCoroutine(DispararConRetardo(direccion, angle));
+    //    StartCoroutine(DispararConRetardo(direccion, angle));
 
-    }
+    //}
 
     private IEnumerator DispararConRetardo(Vector2 direccion, float angle)
     {
@@ -284,6 +285,7 @@ public class Arquero : UnidadJugador
         {
             ReproducirUna(clipMorir, 1f, 0.5f);
         }
+        GestorEntidades.Instance?.Eliminar(tipoUnidad, gameObject);
         base.Morir();
     }
 

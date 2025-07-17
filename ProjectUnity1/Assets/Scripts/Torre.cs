@@ -8,7 +8,7 @@ public class Torre : EdificioBase
     [Header("Combate")]
     [SerializeField] private Transform puntoDisparo;
     [SerializeField] private GameObject proyectilPrefab;
-    [SerializeField] private float radioDeteccion = 5f;
+    [SerializeField] private float radioDeteccion = 6f;
     [SerializeField] private float tiempoEntreDisparos = 1.5f;
     private float tiempoUltimoDisparo = 0f;
 
@@ -18,7 +18,9 @@ public class Torre : EdificioBase
     protected override void Start()
     {
         InicializarVida(0);
-        vidaMaxima = 100;
+        vidaMaxima = 160;
+        ataque = 14;
+        defensa = 6;
         construido = false;
         BeginConstruction();
 
@@ -59,7 +61,8 @@ public class Torre : EdificioBase
         if (proyectilPrefab == null || puntoDisparo == null) return;
 
         Vector2 direccion = (objetivo.transform.position - puntoDisparo.position).normalized;
-        GameObject proyectil = Instantiate(proyectilPrefab, puntoDisparo.position, Quaternion.identity);
+        float angulo = Mathf.Atan2(direccion.y, direccion.x) * Mathf.Rad2Deg;
+        GameObject proyectil = Instantiate(proyectilPrefab, puntoDisparo.position, Quaternion.Euler(0f, 0f, angulo));
         Rigidbody2D rb = proyectil.GetComponent<Rigidbody2D>();
         if (rb != null)
             rb.velocity = direccion * 10f;

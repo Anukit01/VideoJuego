@@ -6,6 +6,7 @@ public abstract class EdificioBase : EntidadBase, IBuilding
 {
 
     public int defensa;
+    public int ataque;
 
 
     [Header("Visuales")]
@@ -97,8 +98,6 @@ public abstract class EdificioBase : EntidadBase, IBuilding
         Derribar();
         base.Morir();
         Destroy(gameObject, 3f);
-        BuildingPlacementManager.Instance?.ActualizarNavMesh();
-
     }
 
     public override void RecibirDanio(int cantidad, GameObject atacante)

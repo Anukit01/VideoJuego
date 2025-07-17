@@ -195,16 +195,16 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4048671743667368393}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.040939674}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3297009324633140289}
-  m_Father: {fileID: 7540362500600930238}
+  m_Father: {fileID: 7887581900255772014}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -0.734, y: 0.3971}
+  m_AnchoredPosition: {x: -0.034000218, y: -0.21290013}
   m_SizeDelta: {x: 1.3636, y: 2.4907}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &2189250958209124377
@@ -1295,6 +1295,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3086369161828139047}
+  - {fileID: 6899826258413360500}
   m_Father: {fileID: 7540362500600930238}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &4145456282376336788
@@ -1533,7 +1534,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 6899826258413360500}
   - {fileID: 1369133283238122615}
   - {fileID: 8563352540095574728}
   - {fileID: 59457699705293245}
@@ -1606,6 +1606,7 @@ MonoBehaviour:
   vidaMaxima: 100
   vida: 0
   defensa: 0
+  ataque: 0
   visualConstruccion: {fileID: 6069697139131431547}
   visualConstruido: {fileID: 8228030255038791541}
   visualDerribado: {fileID: 4807978175118496255}
@@ -1613,9 +1614,9 @@ MonoBehaviour:
   tiempoConstruccion: 7
   costos:
   - nombreRecurso: madera
-    cantidad: 15
+    cantidad: 60
   - nombreRecurso: oro
-    cantidad: 5
+    cantidad: 35
   fuenteEdificio: {fileID: 6916764682117497623}
   clipDerrumbarse: {fileID: 8300000, guid: 90b6cc3d15e1daa4fb48a64fecf6e234, type: 3}
   clipCompleto: {fileID: 8300000, guid: 532841f21ce5d5d4eb6160e6fa127ec5, type: 3}

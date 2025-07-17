@@ -88,7 +88,9 @@ public class CrearUnidad : MonoBehaviour
         }
 
 
-        Instantiate(unidadArquero, puntoSpawn.position, Quaternion.identity);
+        GameObject nuevoArquero = Instantiate(unidadArquero, puntoSpawn.position, Quaternion.identity);
+        GestorEntidades.Instance.Registrar("Arquero", nuevoArquero);
+
         GestionRecrsos.Instance.ActualizarUI();
     }
     public IEnumerator CrearAldeano()
@@ -123,8 +125,9 @@ public class CrearUnidad : MonoBehaviour
             GestionRecrsos.Instance.GastarRecurso(costo.nombreRecurso, costo.cantidad);
         }
 
-      
-        Instantiate(unidadAldeano, puntoSpawn.position, Quaternion.identity);
+
+        GameObject nuevoAldeano = Instantiate(unidadAldeano, puntoSpawn.position, Quaternion.identity);
+        GestorEntidades.Instance.Registrar("Aldeano", nuevoAldeano);
         GestionRecrsos.Instance.ActualizarUI();
 
 
@@ -163,7 +166,9 @@ public class CrearUnidad : MonoBehaviour
         }
 
 
-        Instantiate(unidadCaballero, puntoSpawn.position, Quaternion.identity);
+        GameObject nuevoCaballero = Instantiate(unidadCaballero, puntoSpawn.position, Quaternion.identity);
+        GestorEntidades.Instance.Registrar("Caballero", nuevoCaballero);
+
         GestionRecrsos.Instance.ActualizarUI();
 
 

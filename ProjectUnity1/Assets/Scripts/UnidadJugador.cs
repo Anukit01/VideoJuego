@@ -6,7 +6,7 @@ public abstract class UnidadJugador : UnidadBase, IAccionContextual
 {
     protected NavMeshAgent agent;
     protected Animator animator;
-    protected List<CostoEdificio> costos;
+    [SerializeField] protected List<CostoEdificio> costos;
     public virtual List<CostoEdificio> Costos => costos;
 
     protected override void Start()

@@ -592,6 +592,11 @@ MonoBehaviour:
   defensa: 0
   velocidad: 0
   respondeAlAtaque: 1
+  costos:
+  - nombreRecurso: Madera
+    cantidad: 40
+  - nombreRecurso: Alimento
+    cantidad: 20
   disparoArriba: {fileID: 1224897937922784033}
   disparoAbajo: {fileID: 5692407574778220669}
   disparoLateral: {fileID: 5842592070662907987}

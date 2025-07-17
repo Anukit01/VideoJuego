@@ -3,7 +3,7 @@ using System.Collections;
 
 public class Tree : MonoBehaviour, IRecolectable
 {
-    public int maderaDisponible = 50;
+    public int maderaDisponible = 100;
     [SerializeField] private GameObject troncoVisual;   
     [SerializeField] private GameObject hojasVisual;    
     public TipoRecurso Tipo => TipoRecurso.Madera;

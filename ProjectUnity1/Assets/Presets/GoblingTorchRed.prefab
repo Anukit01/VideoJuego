@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 2120917480394191434}
   - component: {fileID: 3203675235192713302}
   - component: {fileID: 7512748001264600186}
+  - component: {fileID: 8315219683722926077}
   m_Layer: 0
   m_Name: GoblingTorchRed
   m_TagString: Enemigo
@@ -259,6 +260,18 @@ MonoBehaviour:
   offsetDelante: 10
   offsetDetras: -10
   margin: 0.5
+--- !u!114 &8315219683722926077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7720769828145024543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5596e98a41fced44a2ce6a9d5713dbd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8545526351801873021
 GameObject:
   m_ObjectHideFlags: 0

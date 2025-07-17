@@ -9,9 +9,9 @@ public class GestionRecrsos : MonoBehaviour
     public static GestionRecrsos Instance; 
     private Dictionary<string, int> recursos = new Dictionary<string, int>();
 
-    public int alimento = 50;
-    public int oro = 25;
-    public int madera = 100;
+    public int alimento = 120;
+    public int oro = 60;
+    public int madera = 150;
     public int poblacion = 0;
  
 
