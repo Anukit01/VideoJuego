@@ -8,6 +8,7 @@ public class GestorEnemigos : MonoBehaviour
     private int enemigosDerrotados = 0;
     private bool condicionActivada = false;
 
+   
     void Awake()
     {
         Instance = this;

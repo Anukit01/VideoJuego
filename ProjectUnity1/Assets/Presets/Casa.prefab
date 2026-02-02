@@ -265,11 +265,11 @@ MonoBehaviour:
   tiempoConstruccion: 5
   costos:
   - nombreRecurso: madera
-    cantidad: 45
+    cantidad: 30
   - nombreRecurso: oro
-    cantidad: 10
+    cantidad: 15
   - nombreRecurso: Alimento
-    cantidad: 5
+    cantidad: 10
   fuenteEdificio: {fileID: 4986668797376786557}
   clipDerrumbarse: {fileID: 8300000, guid: 90b6cc3d15e1daa4fb48a64fecf6e234, type: 3}
   clipCompleto: {fileID: 8300000, guid: 532841f21ce5d5d4eb6160e6fa127ec5, type: 3}

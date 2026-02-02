@@ -15,6 +15,7 @@ public class Aldeano : UnidadJugador
     [SerializeField] private GameObject visualMadera;
     [SerializeField] private GameObject visualCarne;
     [SerializeField] private GameObject visualBolsaOro;
+    [SerializeField] private Collider2D colliderCombate;
 
     [SerializeField] private AudioSource fuenteAldeano;
     [SerializeField] private AudioClip clipTalado;
@@ -23,7 +24,7 @@ public class Aldeano : UnidadJugador
     [SerializeField] private AudioClip clipMorir;
 
     [SerializeField] private GameObject barraVida;
-    [SerializeField] private string tipoUnidad = "Aldeano";
+    //[SerializeField] private string tipoUnidad = "Aldeano";
 
     public GameObject VisualBolsaOro => visualBolsaOro;
     public GameObject VisualCarne => visualCarne;
@@ -31,9 +32,11 @@ public class Aldeano : UnidadJugador
     public bool EstaOcupadoPrivado { get; private set; }
 
 
+
     public RecoleccionTemporal CargaRecoleccion = new();
     private IRecolectable ultimoRecurso;
     private Sheep ovejaActual;
+    
 
     protected override void Start()
     {
@@ -128,6 +131,94 @@ public class Aldeano : UnidadJugador
         TipoRecurso.Oro => visualBolsaOro,
         _ => null
     };
+    private IEnumerator MoverYRecolectar(IRecolectable recurso, Transform punto)
+    {
+        agent.SetDestination(punto.position);
+        yield return new WaitUntil(() => !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance);
+
+        estadoActual = EstadoAldeano.Talando;
+        animator.SetBool("Talar", true);
+        if (fuenteAldeano != null)
+        {
+            ReproducirLoop(clipTalado);
+
+        }
+
+        yield return StartCoroutine(recurso.EjecutarRecoleccion(this));
+
+        if (fuenteAldeano != null && fuenteAldeano.isPlaying)
+            fuenteAldeano.Stop();
+
+        animator.SetBool("Talar", false);
+        estadoActual = EstadoAldeano.Idle;
+
+    }
+    private Vector3 BuscarPuntoDeEntrega(TipoRecurso tipo)
+    {
+        var puntos = GameObject.FindObjectsOfType<PuntoDeEntrega>();
+        foreach (var p in puntos)
+        {
+            if (!p.enabled) continue; // 👈 Salteamos puntos inactivos
+            if (p.tipoAceptado == tipo)
+                return p.transform.position;
+        }
+
+        return transform.position;
+    }
+    public void TerminarRecoleccion()
+    {
+        animator.SetBool("Talar", false);
+
+        if (CargaRecoleccion.cantidad > 0 && CargaRecoleccion.visual != null)
+            CargaRecoleccion.visual.SetActive(true);
+
+        Vector3 destino = BuscarPuntoDeEntrega(CargaRecoleccion.tipo);
+        agent.SetDestination(destino);
+        animator.SetBool("ManosOcupadas", true);
+        estadoActual = EstadoAldeano.VolverAEntregar;
+
+        StartCoroutine(DepositarRecoleccion());
+    }
+    private IEnumerator DepositarRecoleccion()
+    {
+        yield return new WaitUntil(() => !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance);
+
+        int cantidad = CargaRecoleccion.cantidad;
+        switch (CargaRecoleccion.tipo)
+        {
+            case TipoRecurso.Madera: GestionRecrsos.Instance.SumarMadera(cantidad); break;
+            case TipoRecurso.Alimento: GestionRecrsos.Instance.SumarAlimento(cantidad); break;
+            case TipoRecurso.Oro: GestionRecrsos.Instance.SumarOro(cantidad); break;
+        }
+
+        if (CargaRecoleccion.visual != null)
+            CargaRecoleccion.visual.SetActive(false);
+
+        CargaRecoleccion.Vaciar();
+        estadoActual = EstadoAldeano.Idle;
+        animator.SetBool("ManosOcupadas", false);
+
+        if (ultimoRecurso != null && PuedeVolverARecolectar(ultimoRecurso))
+        {
+            if (ultimoRecurso is Oro oro)
+                StartCoroutine(RecolectarOroRutina(oro));
+            else if (ultimoRecurso is Carne carne)
+                StartCoroutine(MoverYRecolectarCarne(carne));
+
+            else
+                StartCoroutine(MoverYRecolectar(ultimoRecurso, ultimoRecurso.PuntoDeRecoleccion));
+        }
+    }
+    private bool PuedeVolverARecolectar(IRecolectable recurso)
+    {       
+        return recurso switch
+        {
+            Tree tree => tree.maderaDisponible > 0,
+            Oro oro => oro.cantidad > 0,
+            Carne carne => carne.cantidad > 0,
+            _ => false
+        };
+    }
 
     private void ResetearEstado()
     {
@@ -159,76 +250,6 @@ public class Aldeano : UnidadJugador
         estadoActual = EstadoAldeano.Idle;
     }
 
-    public void TerminarRecoleccion()
-    {
-        animator.SetBool("Talar", false);
-
-        if (CargaRecoleccion.EstaLleno && CargaRecoleccion.visual != null)
-            CargaRecoleccion.visual.SetActive(true);
-
-        Vector3 destino = BuscarPuntoDeEntrega(CargaRecoleccion.tipo);
-        agent.SetDestination(destino);
-        animator.SetBool("ManosOcupadas", true);
-        estadoActual = EstadoAldeano.VolverAEntregar;
-
-        StartCoroutine(DepositarRecoleccion());
-    }
-
-    private Vector3 BuscarPuntoDeEntrega(TipoRecurso tipo)
-    {
-        var puntos = GameObject.FindObjectsOfType<PuntoDeEntrega>();
-        foreach (var p in puntos)
-        {
-            if (!p.enabled) continue; // 👈 Salteamos puntos inactivos
-            if (p.tipoAceptado == tipo)
-                return p.transform.position;
-        }
-
-        return transform.position;
-    }
-
-
-    private IEnumerator DepositarRecoleccion()
-    {
-        yield return new WaitUntil(() => !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance);
-
-        int cantidad = CargaRecoleccion.cantidad;
-        switch (CargaRecoleccion.tipo)
-        {
-            case TipoRecurso.Madera: GestionRecrsos.Instance.SumarMadera(cantidad); break;
-            case TipoRecurso.Alimento: GestionRecrsos.Instance.SumarAlimento(cantidad); break;
-            case TipoRecurso.Oro: GestionRecrsos.Instance.SumarOro(cantidad); break;
-        }
-
-        if (CargaRecoleccion.visual != null)
-            CargaRecoleccion.visual.SetActive(false);
-
-        CargaRecoleccion.Vaciar();
-        estadoActual = EstadoAldeano.Idle;
-        animator.SetBool("ManosOcupadas", false);
-
-        if (ultimoRecurso != null && PuedeVolverARecolectar(ultimoRecurso))
-        {
-            if (ultimoRecurso is Oro oro)
-                StartCoroutine(RecolectarOroRutina(oro));
-            else if (ultimoRecurso is Carne carne)
-                StartCoroutine(MoverYRecolectarCarne(carne));
-
-            else
-                StartCoroutine(MoverYRecolectar(ultimoRecurso, ultimoRecurso.PuntoDeRecoleccion));
-        }
-    }
-    
-    private bool PuedeVolverARecolectar(IRecolectable recurso)
-    {       
-        return recurso switch
-        {
-            Tree tree => tree.maderaDisponible > 0,
-            Oro oro => oro.cantidad > 0,
-            Carne carne => carne.cantidad > 0,
-            _ => false
-        };
-    }
 
     private void AtacarOveja(Sheep oveja)
     {
@@ -305,29 +326,6 @@ public class Aldeano : UnidadJugador
             if (carne != null)
                 EjecutarAccion(carne, carne.transform.position);
         }
-    }
- 
-    private IEnumerator MoverYRecolectar(IRecolectable recurso, Transform punto)
-    {
-        agent.SetDestination(punto.position);
-        yield return new WaitUntil(() => !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance);
-
-        estadoActual = EstadoAldeano.Talando;
-        animator.SetBool("Talar", true);
-        if (fuenteAldeano != null)
-        {
-            ReproducirLoop(clipTalado);
-
-        }
-
-        yield return StartCoroutine(recurso.EjecutarRecoleccion(this));
-
-        if (fuenteAldeano != null && fuenteAldeano.isPlaying)
-            fuenteAldeano.Stop();
-
-        animator.SetBool("Talar", false);
-        estadoActual = EstadoAldeano.Idle;
-
     }
 
     private IEnumerator CombatirEntidadRutina(GameObject objetivo, IAtacable atacable)
@@ -434,10 +432,15 @@ public class Aldeano : UnidadJugador
         if (prefab.TryGetComponent<IBuilding>(out var construible))
         {
             foreach (var costo in construible.Costos)
+            {
                 if (!GestionRecrsos.Instance.TieneRecurso(costo.nombreRecurso, costo.cantidad))
-                    yield break;
+                {
+                    FindObjectOfType<MensajeSistema>().MostrarMensaje($" Falta {costo.nombreRecurso} para construir.");
+                    yield break; // cancela la construcción
+                }
+            }
         }
-
+        
         GameObject edificio = Instantiate(prefab, posicion, Quaternion.identity);
         BuildingPlacementManager.Instance?.ActualizarNavMesh();
         yield return new WaitForSeconds(0.05f);
@@ -585,13 +588,25 @@ public class Aldeano : UnidadJugador
         }
             if (CargaRecoleccion.visual != null)
             CargaRecoleccion.visual.SetActive(false);
-        GestorEntidades.Instance?.Eliminar(tipoUnidad, gameObject);
+        
         Destroy(gameObject);
 
 
         base.Morir();
     }
 
+    void SetRecoleccionActiva(bool recolectando)
+    {
+        EstaOcupadoPrivado = recolectando;
+        spriteRenderer.enabled = !recolectando;
+        barraVida.SetActive(!recolectando);
+
+        // Opcional: desactivar collider de combate
+        if (colliderCombate != null)
+            colliderCombate.enabled = !recolectando;
+
+        // O quitar temporalmente la interfaz IAtacable si es modular
+    }
 
 }
 

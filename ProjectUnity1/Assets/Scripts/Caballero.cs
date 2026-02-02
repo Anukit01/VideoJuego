@@ -16,7 +16,7 @@ public class Caballero : UnidadJugador
 
     public bool EstaAtacando() => atacando;
     [SerializeField] private float radioDeteccion = 4f;
-    [SerializeField] private string tipoUnidad = "Caballero";
+    //[SerializeField] private string tipoUnidad = "Caballero";
 
     protected override void Start()
     {
@@ -86,6 +86,7 @@ public class Caballero : UnidadJugador
 
         while (objetivo != null && atacable.EstaVivo())
         {
+
             var direccion = CalcularDireccion(transform.position, objetivo.transform.position);
 
             if (TryGetComponent<OrientadorVisual>(out var orientador))
@@ -194,7 +195,7 @@ public class Caballero : UnidadJugador
         {
             ReproducirUna(clipMorir);
         }
-        GestorEntidades.Instance?.Eliminar(tipoUnidad, gameObject);
+        //GestorEntidades.Instance?.Eliminar(tipoUnidad, gameObject);
         base.Morir();
     }
 

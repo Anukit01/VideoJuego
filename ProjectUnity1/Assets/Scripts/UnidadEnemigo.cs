@@ -13,7 +13,7 @@ public abstract class UnidadEnemigo : UnidadBase
 
     {
         base.Start();
-        GestorEntidades.Instance?.Registrar("UnidadJugador", gameObject);
+      
         agent = GetComponent<NavMeshAgent>();
         agent.updateRotation = false;
         agent.updateUpAxis = false;

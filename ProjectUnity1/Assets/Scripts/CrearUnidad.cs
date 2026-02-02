@@ -20,7 +20,7 @@ public class CrearUnidad : MonoBehaviour
     {
         if (SeleccionadorDeUnidad.Instance.todasLasUnidades.Count >= GestionRecrsos.Instance.poblacion)
         {
-            Debug.Log("No se puede crear más unidades. Límite de población alcanzado.");
+            FindObjectOfType<MensajeSistema>().MostrarMensaje("No se puede crear más unidades. Límite de población alcanzado.");
             return;
         }
         else
@@ -34,7 +34,7 @@ public class CrearUnidad : MonoBehaviour
     {
         if (SeleccionadorDeUnidad.Instance.todasLasUnidades.Count >= GestionRecrsos.Instance.poblacion)
         {
-            Debug.Log("No se puede crear más unidades. Límite de población alcanzado.");
+            FindObjectOfType<MensajeSistema>().MostrarMensaje("No se puede crear más unidades. Límite de población alcanzado.");
             return;
         }
         else
@@ -46,7 +46,7 @@ public class CrearUnidad : MonoBehaviour
     {
         if (SeleccionadorDeUnidad.Instance.todasLasUnidades.Count >= GestionRecrsos.Instance.poblacion)
         {
-            Debug.Log("No se puede crear más unidades. Límite de población alcanzado.");
+            FindObjectOfType<MensajeSistema>().MostrarMensaje("No se puede crear más unidades. Límite de población alcanzado.");         
             return;
         }
         else
@@ -76,7 +76,7 @@ public class CrearUnidad : MonoBehaviour
 
             if (!GestionRecrsos.Instance.TieneRecurso(costo.nombreRecurso, costo.cantidad))
             {
-                Debug.LogWarning("Faltan recursos al momento de crear");
+                FindObjectOfType<MensajeSistema>().MostrarMensaje("No se puede crear más unidades.Faltan recursos.");
                 yield break;
             }
         }
@@ -89,7 +89,7 @@ public class CrearUnidad : MonoBehaviour
 
 
         GameObject nuevoArquero = Instantiate(unidadArquero, puntoSpawn.position, Quaternion.identity);
-        GestorEntidades.Instance.Registrar("Arquero", nuevoArquero);
+        GestorEntidades.Instance.RegistrarArquero();
 
         GestionRecrsos.Instance.ActualizarUI();
     }
@@ -114,7 +114,7 @@ public class CrearUnidad : MonoBehaviour
 
             if (!GestionRecrsos.Instance.TieneRecurso(costo.nombreRecurso, costo.cantidad))
             {
-                Debug.LogWarning("Faltan recursos al momento de crear");
+                FindObjectOfType<MensajeSistema>().MostrarMensaje("No se puede crear más unidades.Faltan recursos.");
                 yield break;
             }
         }
@@ -127,7 +127,7 @@ public class CrearUnidad : MonoBehaviour
 
 
         GameObject nuevoAldeano = Instantiate(unidadAldeano, puntoSpawn.position, Quaternion.identity);
-        GestorEntidades.Instance.Registrar("Aldeano", nuevoAldeano);
+        GestorEntidades.Instance.RegistrarAldeano();
         GestionRecrsos.Instance.ActualizarUI();
 
 
@@ -154,7 +154,7 @@ public class CrearUnidad : MonoBehaviour
 
             if (!GestionRecrsos.Instance.TieneRecurso(costo.nombreRecurso, costo.cantidad))
             {
-                Debug.LogWarning("Faltan recursos al momento de crear");
+                FindObjectOfType<MensajeSistema>().MostrarMensaje("No se puede crear más unidades.Faltan recursos.");
                 yield break;
             }
         }
@@ -167,7 +167,7 @@ public class CrearUnidad : MonoBehaviour
 
 
         GameObject nuevoCaballero = Instantiate(unidadCaballero, puntoSpawn.position, Quaternion.identity);
-        GestorEntidades.Instance.Registrar("Caballero", nuevoCaballero);
+        GestorEntidades.Instance.RegistrarCaballero();
 
         GestionRecrsos.Instance.ActualizarUI();
 

@@ -1,13 +1,14 @@
 using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
+using static Aldeano;
 
 public class GoblingMasGrande : UnidadEnemigo, IAtacable
 {
     [SerializeField, Tooltip("Opcional. Si se asignan puntos de patrulla, la unidad patrullará.")]
     private Transform[] puntosPatrulla = new Transform[0];
     private int indicePatrulla = 0;
-    [SerializeField] private string tipoUnidad = "Gobling Grande";
+    //[SerializeField] private string tipoUnidad = "Gobling Grande";
 
     private float tiempoIdleEnPatrulla = 2f;
     private bool esperando = false;
@@ -26,10 +27,10 @@ public class GoblingMasGrande : UnidadEnemigo, IAtacable
         base.Start();
         animator = GetComponent<Animator>();
         InicializarVida(110);
-        ataque = 19;
+        ataque = 17;
         defensa = 7;
 
-        GestorEntidades.Instance?.Registrar(tipoUnidad, gameObject);
+        //GestorEntidades.Instance?.Registrar(tipoUnidad, gameObject);
         GestorEnemigos.Instance?.RegistrarEnemigo();
         if (puntosPatrulla != null && puntosPatrulla.Length > 0)
             MoverHacia(puntosPatrulla[indicePatrulla].position);
@@ -110,9 +111,20 @@ public class GoblingMasGrande : UnidadEnemigo, IAtacable
             {
                 if (FaccionUtils.SonEnemigos(faccion, unidadJugador.faccion))
                 {
-                    ReproducirUna(clipRuido, 1f, 0.5f);
-                    return unidadJugador.gameObject;
+                    if (unidadJugador.TryGetComponent<Aldeano>(out var aldeano))
+                    {
+                        if (aldeano.estadoActual == EstadoAldeano.Recolectando || aldeano.EstaOcupadoPrivado)
+                            return null;
+                    }
+                    else
+                    {
+                        ReproducirUna(clipRuido);
+                        return unidadJugador.gameObject;
+
+                    }
+
                 }
+
             }
 
             if (col.TryGetComponent<EdificioBase>(out var entidadBase))
@@ -163,6 +175,20 @@ public class GoblingMasGrande : UnidadEnemigo, IAtacable
                 }
         while (objetivo != null && atacable.EstaVivo())
         {
+            float distanciaActual = Vector2.Distance(transform.position, objetivo.transform.position);
+            if (distanciaActual > distanciaAtaque + margen)
+            {
+                agent.SetDestination(objetivo.transform.position);
+                animator.SetBool("IsMoving", true);
+                yield return new WaitUntil(() =>
+                    !agent.pathPending &&
+                    agent.hasPath &&
+                    agent.remainingDistance <= distanciaAtaque + margen);
+
+                agent.SetDestination(transform.position);
+                animator.SetBool("IsMoving", false);
+            }          
+
             DireccionAtaque direccion = CalcularDireccion(transform.position, objetivo.transform.position);
 
             ResetearAnimacionesAtaque();
@@ -247,7 +273,7 @@ public class GoblingMasGrande : UnidadEnemigo, IAtacable
         {
             ReproducirUna(clipMorir, 1f, 0.5f);
         }
-        GestorEntidades.Instance?.Eliminar(tipoUnidad, gameObject);
+        //GestorEntidades.Instance?.Eliminar(tipoUnidad, gameObject);
         GestorEnemigos.Instance?.NotificarMuerte();
 
         base.Morir();

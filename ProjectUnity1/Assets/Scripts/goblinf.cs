@@ -1,13 +1,14 @@
 using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
+using static Aldeano;
 
 public class Gobling : UnidadEnemigo, IAtacable
 {
     [SerializeField]
     private Transform[] puntosPatrulla = new Transform[0];
     private int indicePatrulla = 0;
-    [SerializeField] private string tipoUnidad = "Gobling";
+    //[SerializeField] private string tipoUnidad = "Gobling";
 
 
     private float tiempoIdleEnPatrulla = 2f;
@@ -30,7 +31,7 @@ public class Gobling : UnidadEnemigo, IAtacable
         ataque = 10;
         defensa = 3;
 
-        GestorEntidades.Instance?.Registrar(tipoUnidad, gameObject);
+        //GestorEntidades.Instance?.Registrar(tipoUnidad, gameObject);
         GestorEnemigos.Instance?.RegistrarEnemigo();
 
         if (puntosPatrulla != null && puntosPatrulla.Length > 0)
@@ -38,6 +39,7 @@ public class Gobling : UnidadEnemigo, IAtacable
     }
     public override void EjecutarAccion(GameObject objetivo, Vector3 destino)
     {
+        StopAllCoroutines();
         if (objetivo != null && objetivo.TryGetComponent<Sheep>(out var oveja))     
             return;
         if (objetivo != null)
@@ -112,9 +114,20 @@ public class Gobling : UnidadEnemigo, IAtacable
             {
                 if (FaccionUtils.SonEnemigos(faccion, unidadJugador.faccion))
                 {
+                if (unidadJugador.TryGetComponent<Aldeano>(out var aldeano))
+                {
+                        if (aldeano.estadoActual == EstadoAldeano.Recolectando || aldeano.EstaOcupadoPrivado)
+                            return null;
+                    }
+                    else
+                    {
                     ReproducirUna(clipRuido);
                     return unidadJugador.gameObject;               
+
+                    }
+
                 }
+
             }
 
             if (col.TryGetComponent<EdificioBase>(out var entidadBase))
@@ -165,11 +178,13 @@ public class Gobling : UnidadEnemigo, IAtacable
 
         }
         while (objetivo != null && atacable.EstaVivo())
-        {
-            float distanciaActual = Vector2.Distance(transform.position, objetivo.transform.position);
+        {         
+
+         float distanciaActual = Vector2.Distance(transform.position, objetivo.transform.position);
             if (distanciaActual > distanciaAtaque + margen)
             {
                 agent.SetDestination(objetivo.transform.position);
+                animator.SetBool("IsMoving", true);
 
                 yield return new WaitUntil(() =>
                     !agent.pathPending &&
@@ -256,7 +271,7 @@ public class Gobling : UnidadEnemigo, IAtacable
         {
             ReproducirUna(clipMorir);
         }
-        GestorEntidades.Instance?.Eliminar(tipoUnidad, gameObject);
+        //GestorEntidades.Instance?.Eliminar(tipoUnidad, gameObject);
         GestorEnemigos.Instance?.NotificarMuerte();
 
         base.Morir();

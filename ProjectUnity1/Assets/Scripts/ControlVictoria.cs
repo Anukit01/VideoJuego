@@ -10,14 +10,22 @@ public class GestorVictoria : MonoBehaviour
     [SerializeField] private GameObject panelVictoriaFinal;
     [SerializeField] private TMP_Text textoEstadisticas;
 
+    [SerializeField] private AudioSource fuenteVictoria;
+    [SerializeField] private AudioClip clipVictoria;
+
     //private int enemigosTotales = 0;
     //private int enemigosDerrotados = 0;
     public static GestorVictoria Instance { get; private set; }
 
     void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
     }
     //public void RegistrarEnemigo() => enemigosTotales++;
     //public void EnemigoMuerto()
@@ -36,7 +44,12 @@ public class GestorVictoria : MonoBehaviour
     public void SalirConEstilo()
     {
         panelDecision.SetActive(false);
-        panelVictoriaFinal.SetActive(true);    
+        panelVictoriaFinal.SetActive(true);
+        if (fuenteVictoria != null && clipVictoria != null)
+        {
+            fuenteVictoria.clip = clipVictoria;
+            fuenteVictoria.Play();
+        }
         Time.timeScale = 0f; // sigue pausado
     }
 
@@ -47,9 +60,15 @@ public class GestorVictoria : MonoBehaviour
     }
 
     public void VictoriaFinal()
-    {
+    {     
         Time.timeScale = 0f;
+      
         panelVictoriaFinal.SetActive(true);
+        if (fuenteVictoria != null && clipVictoria != null)
+        {
+            fuenteVictoria.clip = clipVictoria;
+            fuenteVictoria.Play();
+        }
     }
     public void VerEstadisticas()
     {
@@ -67,12 +86,13 @@ public class GestorVictoria : MonoBehaviour
     private void MostrarEstadisticas()
     {
         // Podés cargar los datos desde tu sistema actual
-        int aldeanos = GestorEntidades.Instance.Contar("Aldeano");
-        int arqueros = GestorEntidades.Instance.Contar("Arquero");
-        int caballeros = GestorEntidades.Instance.Contar("Caballero");
-        
+        int aldeanos = GestorEntidades.Instance.aldeanosCreados;
+        int arqueros = GestorEntidades.Instance.arquerosCreados;
+        int caballeros = GestorEntidades.Instance.caballerosCreados;
 
-        TMP_Text texto = panelEstadisticas.GetComponentInChildren<TMP_Text>();
+
+
+        TMP_Text texto = textoEstadisticas.GetComponent<TMP_Text>();
         texto.text = $"Has creado:\n{aldeanos} Aldeanos\n{arqueros} Arqueros\n{caballeros} Caballeros";
     }
     public void ActivarVictoriaParcial()

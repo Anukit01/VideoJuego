@@ -34,7 +34,7 @@ public class CanvasConstruccion : MonoBehaviour
         }
         else
         {
-            Debug.Log("No hay suficientes recursos para el Castillo.");
+            FindObjectOfType<MensajeSistema>().MostrarMensaje($" Faltan recursos para construir un Castillo.");
         }
     }
 
@@ -48,7 +48,7 @@ public class CanvasConstruccion : MonoBehaviour
         }
         else
         {
-            Debug.Log("No hay suficientes recursos para el Castillo.");
+            FindObjectOfType<MensajeSistema>().MostrarMensaje($" Faltan recursos para construir una Torre.");
         }      
     }
 
@@ -62,7 +62,7 @@ public class CanvasConstruccion : MonoBehaviour
         }
         else
         {
-            Debug.Log("No hay suficientes recursos para el Castillo.");
+            FindObjectOfType<MensajeSistema>().MostrarMensaje($" Faltan recursos para construir una Casa.");
         }
     }
 }

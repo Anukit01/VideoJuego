@@ -191,7 +191,7 @@ MonoBehaviour:
   respondeAlAtaque: 1
   costos:
   - nombreRecurso: Madera
-    cantidad: 20
+    cantidad: 10
   - nombreRecurso: Alimento
     cantidad: 10
   estadoActual: 0
@@ -199,13 +199,13 @@ MonoBehaviour:
   visualMadera: {fileID: 6499941152634491741}
   visualCarne: {fileID: 179572327190834880}
   visualBolsaOro: {fileID: 4640054425515616574}
+  colliderCombate: {fileID: 2915781732710745827}
   fuenteAldeano: {fileID: 4050556281217402420}
   clipTalado: {fileID: 8300000, guid: e882fdeff9716f24f84b263fc3dea820, type: 3}
   clipConstruyo: {fileID: 8300000, guid: d5d4abd668861764a8ed117081f0172a, type: 3}
   clipMinando: {fileID: 8300000, guid: 7a3569d9e19fc7f4a9e2f211accf4ddc, type: 3}
   clipMorir: {fileID: 8300000, guid: 41921e5031afd1c448aa3edb0d77494f, type: 3}
   barraVida: {fileID: 7389471057207190476}
-  tipoUnidad: Aldeano
 --- !u!50 &8260329927550474909
 Rigidbody2D:
   serializedVersion: 4

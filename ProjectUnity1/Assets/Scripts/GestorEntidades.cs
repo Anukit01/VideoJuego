@@ -5,33 +5,56 @@ public class GestorEntidades : MonoBehaviour
 {
     public static GestorEntidades Instance { get; private set; }
 
-    private Dictionary<string, List<GameObject>> entidades = new();
+    public int aldeanosCreados = 0;
+    public int arquerosCreados = 0;
+    public int caballerosCreados = 0;
 
-    private void Awake()
+    void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        Instance = this;
     }
 
-    public void Registrar(string tipo, GameObject entidad)
+    public void RegistrarAldeano()
     {
-        if (!entidades.ContainsKey(tipo))
-            entidades[tipo] = new List<GameObject>();
-
-        entidades[tipo].Add(entidad);
+        aldeanosCreados++;
+    }
+    public void RegistrarArquero()
+    {
+        arquerosCreados++;
+    }
+    public void RegistrarCaballero()
+    {
+        caballerosCreados++;
     }
 
-    public void Eliminar(string tipo, GameObject entidad)
-    {
-        if (entidades.ContainsKey(tipo))
-            entidades[tipo].Remove(entidad);
-    }
 
-    public int Contar(string tipo)
-    {
-        if (entidades.ContainsKey(tipo))
-            return entidades[tipo].Count;
+    //private Dictionary<string, List<GameObject>> entidades = new();
 
-        return 0;
-    }
+    //private void Awake()
+    //{
+    //    if (Instance == null) Instance = this;
+    //    else Destroy(gameObject);
+    //}
+
+    //public void Registrar(string tipo, GameObject entidad)
+    //{
+    //    if (!entidades.ContainsKey(tipo))
+    //        entidades[tipo] = new List<GameObject>();
+
+    //    entidades[tipo].Add(entidad);
+    //}
+
+    //public void Eliminar(string tipo, GameObject entidad)
+    //{
+    //    if (entidades.ContainsKey(tipo))
+    //        entidades[tipo].Remove(entidad);
+    //}
+
+    //public int Contar(string tipo)
+    //{
+    //    if (entidades.ContainsKey(tipo))
+    //        return entidades[tipo].Count;
+
+    //    return 0;
+    //}
 }

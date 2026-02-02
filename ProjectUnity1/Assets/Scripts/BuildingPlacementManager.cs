@@ -73,12 +73,16 @@ public class BuildingPlacementManager : MonoBehaviour
     private IEnumerator RebuildNavmeshConDelay()
     {
         yield return new WaitForEndOfFrame();
-        yield return new WaitForEndOfFrame();
+        yield return new WaitForSeconds(0.1f);
 
-        if (navMeshSurface != null)
-            navMeshSurface.BuildNavMesh();
-        else
-            Debug.LogWarning("NavMeshSurface no asignado.");
+        if (navMeshSurface == null)
+        {
+            Debug.LogWarning("NavMeshSurface no asignado. Cancelando reconstrucción.");
+            yield break;
+        }
+
+        navMeshSurface.BuildNavMesh();
+
     }
 
 

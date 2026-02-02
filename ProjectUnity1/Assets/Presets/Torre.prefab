@@ -1614,7 +1614,7 @@ MonoBehaviour:
   tiempoConstruccion: 7
   costos:
   - nombreRecurso: madera
-    cantidad: 60
+    cantidad: 50
   - nombreRecurso: oro
     cantidad: 35
   fuenteEdificio: {fileID: 6916764682117497623}

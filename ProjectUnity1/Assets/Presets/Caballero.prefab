@@ -499,9 +499,9 @@ MonoBehaviour:
   respondeAlAtaque: 1
   costos:
   - nombreRecurso: Alimento
-    cantidad: 35
+    cantidad: 25
   - nombreRecurso: Madera
-    cantidad: 30
+    cantidad: 20
   - nombreRecurso: Oro
     cantidad: 10
   fuenteCaballero: {fileID: 6647865652220075871}

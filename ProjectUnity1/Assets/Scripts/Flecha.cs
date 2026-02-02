@@ -6,7 +6,7 @@ public class Flecha : MonoBehaviour
     private GameObject emisor;
     private Vector2 puntoInicial;
 
-    [SerializeField] private float velocidad = 10f;
+   
     [SerializeField] private float distanciaMaxima = 12f;
 
     public void SetDanio(int cantidad) => danio = cantidad;

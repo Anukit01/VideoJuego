@@ -13,14 +13,14 @@ public class Arquero : UnidadJugador
 
     [Header("Combate")]
     [SerializeField] private GameObject proyectilPrefab;
-    [SerializeField] private float radioDeteccion = 4.5f;
+    [SerializeField] private float radioDeteccion = 5f;
     [SerializeField] private float tiempoEntreDisparos = 1.5f;
 
     [SerializeField] private AudioSource fuenteArquero;
     [SerializeField] private AudioClip clipGolpear;
     [SerializeField] private AudioClip clipMorir;
 
-    [SerializeField] private string tipoUnidad = "Arquero";
+    //[SerializeField] private string tipoUnidad = "Arquero";
 
     private float tiempoUltimoDisparo = 0f;
     private Coroutine rutinaAtaque;
@@ -285,7 +285,7 @@ public class Arquero : UnidadJugador
         {
             ReproducirUna(clipMorir, 1f, 0.5f);
         }
-        GestorEntidades.Instance?.Eliminar(tipoUnidad, gameObject);
+        //GestorEntidades.Instance?.Eliminar(tipoUnidad, gameObject);
         base.Morir();
     }
 
