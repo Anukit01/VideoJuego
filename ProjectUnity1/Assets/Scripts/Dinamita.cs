@@ -21,17 +21,27 @@ public class Dinamita : MonoBehaviour
     {
         puntoInicial = transform.position;
         StartCoroutine(ContadorAutoExplosion());
+        var col = GetComponent<Collider2D>();
+        col.enabled = false;
+        StartCoroutine(ActivarColliderConRetardo(col));
+    
 
+   
         // Ignorar colisión con el emisor
         if (emisor != null && emisor.TryGetComponent<Collider2D>(out var colEmisor))
         {
             Physics2D.IgnoreCollision(GetComponent<Collider2D>(), colEmisor);
         }
 
-        Destroy(gameObject, 4f); // Seguridad extra
+        Destroy(gameObject, 6f); // Seguridad extra
     }
+ private IEnumerator ActivarColliderConRetardo(Collider2D col)
+{
+    yield return new WaitForSeconds(0.2f);
+    col.enabled = true;
+}
 
-    void Update()
+void Update()
     {
         if (Vector2.Distance(transform.position, puntoInicial) >= distanciaMaxima && !explotado)
         {
@@ -50,6 +60,9 @@ public class Dinamita : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (explotado || collision.gameObject == emisor)
+            return;
+        
+        if (Vector2.Distance(transform.position, emisor.transform.position) < 1.5f)
             return;
 
         if (collision.TryGetComponent<Sheep>(out _))

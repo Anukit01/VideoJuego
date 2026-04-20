@@ -4,12 +4,13 @@ using UnityEngine.AI;
 
 public class GoblingTNT : UnidadEnemigo, IAtacable
 {
+    
     [Header("Patrullaje")]
     [SerializeField] private Transform[] puntosPatrulla = new Transform[0];
     private int indicePatrulla = 0;
     private float tiempoIdleEnPatrulla = 2f;
     private bool esperando = false;
-
+    
     [Header("Combate a distancia")]
     [SerializeField] private Transform puntoLanzamiento;
     [SerializeField] private GameObject dinamitaPrefab;
@@ -162,6 +163,9 @@ public class GoblingTNT : UnidadEnemigo, IAtacable
                     StartCoroutine(LanzarConRetardo(direccion, angle));
 
                     tiempoUltimoLanzamiento = Time.time;
+
+                    
+
                 }
             }
 
