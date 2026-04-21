@@ -7,22 +7,23 @@ using UnityEngine.UI;
 public class TutorialSlide
 {
     public string texto;
-    public Sprite imagen;
+  
 }
 
 public class TutorialManager : MonoBehaviour
 {
     public TypewriterEffect typewriterEffect;
-    public GameObject panelTutorial;
-    public Image imagenTutorial;
+    public GameObject panelHistoria;
+    
     public TMP_Text textoTutorial;
     public List<TutorialSlide> slides;
     private int indexActual = 0;
+    public TutorialMan2 tutorialManager;
 
     void Start()
     {
         Time.timeScale = 0;
-        panelTutorial.SetActive(true);
+        panelHistoria.SetActive(true);
         MostrarSlide(indexActual);
     }
 
@@ -35,8 +36,9 @@ public class TutorialManager : MonoBehaviour
         }
         else
         {
-            panelTutorial.SetActive(false);
+            panelHistoria.SetActive(false);
             Time.timeScale = 1;
+            tutorialManager.IniciarTutorial();
         }
     }
     public void SlideAnterior()
@@ -51,27 +53,17 @@ public class TutorialManager : MonoBehaviour
             indexActual = 0;
         }
     }
-    public void SaltarTutorial()
+    public void SaltarHistoria()
     {
-        panelTutorial.SetActive(false);
+        panelHistoria.SetActive(false);
         Time.timeScale = 1;
+        tutorialManager.IniciarTutorial();
     }
 
     void MostrarSlide(int index)
     {
         var slide = slides[index];
-        typewriterEffect.MostrarTexto(slide.texto);
-
-
-        if (slide.imagen != null)
-        {
-            imagenTutorial.gameObject.SetActive(true);
-            imagenTutorial.sprite = slide.imagen;
-        }
-        else
-        {
-            imagenTutorial.gameObject.SetActive(false);
-        }
+        typewriterEffect.MostrarTexto(slide.texto);        
     }
 
 }

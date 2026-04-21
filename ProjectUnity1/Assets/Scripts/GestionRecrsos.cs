@@ -43,10 +43,10 @@ public class GestionRecrsos : MonoBehaviour
 
     public void ActualizarUI()
     {
-        TextAlimento.text = "Alimento: " + alimento;
-        TextOro.text = "Oro: " + oro;
-        TextMadera.text = "Madera: " + madera;
-        TextPoblacion.text = $"Población: {SeleccionadorDeUnidad.Instance.todasLasUnidades.Count} / {GestionRecrsos.Instance.poblacion}";
+        TextAlimento.text = " " + alimento;
+        TextOro.text = " " + oro;
+        TextMadera.text = " " + madera;
+        TextPoblacion.text = $" {SeleccionadorDeUnidad.Instance.todasLasUnidades.Count} / {GestionRecrsos.Instance.poblacion}";
     }
     public bool TieneRecurso(string nombre, int cantidad)
     {

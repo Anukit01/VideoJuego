@@ -398,11 +398,15 @@ public class Aldeano : UnidadJugador
             fuenteAldeano.Stop();
 
         if (mina.cantidad > 0)
+        {
             mina.RevertirVisualActiva();
+            ultimoRecurso = mina;
+        }
         else
+        {
             mina.MostrarVisualDestruida();
-
-        ultimoRecurso = mina;
+            ultimoRecurso = null;
+        }
         animator.SetBool("ManosOcupadas", true);
         spriteRenderer.enabled = true;
         visualBolsaOro.SetActive(true);
