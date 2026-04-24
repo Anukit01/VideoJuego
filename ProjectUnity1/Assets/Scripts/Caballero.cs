@@ -25,7 +25,7 @@ public class Caballero : UnidadJugador
         ataque = 10;
         defensa = 8;
         base.Start();
-           
+        GestorEntidades.Instance.RegistrarCaballero();
         rutinaAutodefensa = StartCoroutine(RutinaAutodefensa());
     
     }
@@ -195,7 +195,7 @@ public class Caballero : UnidadJugador
         {
             ReproducirUna(clipMorir);
         }
-        //GestorEntidades.Instance?.Eliminar(tipoUnidad, gameObject);
+        GestorEntidades.Instance.CaballeroMuerto();
         base.Morir();
     }
 

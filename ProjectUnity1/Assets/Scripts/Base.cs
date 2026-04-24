@@ -13,7 +13,7 @@ public class Base : EdificioBase
     protected override void Start()
     {
             
-        vidaMaxima = 250;
+        vidaMaxima = 150;
         defensa = 9;
         if (!iniciarConstruido)
         {
@@ -26,7 +26,30 @@ public class Base : EdificioBase
             InicializarVida(vidaMaxima);
             construido = true;
             CompleteConstruction(); 
-        }     
+        }
+        if (menuEdificio == null)
+        {
+            // Busca el hijo llamado "MenuEdificio" dentro del prefab
+            menuEdificio = transform.Find("MenuEdificio")?.gameObject;
+        }
+        GestorEntidades.Instance.RegistrarBase();
+    }
+   void Update()
+    {
+        if (menuEdificio != null && menuEdificio.activeSelf)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                RaycastHit2D hit = Physics2D.GetRayIntersection(ray);
+
+                // Si el click no fue sobre la base ni sobre ningún hijo de la base (incluido el menú), cerramos
+                if (hit.collider == null || !hit.collider.transform.IsChildOf(transform))
+                {
+                    ActivarMenuVida();
+                }
+            }
+        }
     }
    
 
@@ -79,7 +102,7 @@ public class Base : EdificioBase
         GestionRecrsos.Instance.SumarPoblación(-3);
         ActualizarVidaVisual();
         GestionRecrsos.Instance.ActualizarUI();
-        
+        GestorEntidades.Instance.BaseDestruida();
         base.Derribar();
 
 
@@ -96,8 +119,17 @@ public class Base : EdificioBase
         if (menuEdificio != null)
             menuEdificio.SetActive(!menuEdificio.activeSelf);
     }
+    public void ActivarMenuVida()
+    {
+        if (!EstáConstruido)
+            return;
+        
+        if (vidaVisual != null)
+            vidaVisual.SetActive(!vidaVisual.activeSelf);       
 
-
+        if (menuEdificio != null)
+            menuEdificio.SetActive(!menuEdificio.activeSelf);
+    }
 
 }
 

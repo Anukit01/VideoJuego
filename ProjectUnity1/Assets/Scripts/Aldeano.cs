@@ -1,9 +1,6 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.AI;
 
 public class Aldeano : UnidadJugador
 {
@@ -24,7 +21,7 @@ public class Aldeano : UnidadJugador
     [SerializeField] private AudioClip clipMorir;
 
     [SerializeField] private GameObject barraVida;
-    //[SerializeField] private string tipoUnidad = "Aldeano";
+    
 
     public GameObject VisualBolsaOro => visualBolsaOro;
     public GameObject VisualCarne => visualCarne;
@@ -47,7 +44,7 @@ public class Aldeano : UnidadJugador
         defensa = 3;        
         EstaOcupadoPrivado = false;
         base.Start();
-
+        GestorEntidades.Instance.RegistrarAldeano();
     }
 
     public override void EjecutarAccion(GameObject objetivo, Vector3 destino)
@@ -158,11 +155,42 @@ public class Aldeano : UnidadJugador
         var puntos = GameObject.FindObjectsOfType<PuntoDeEntrega>();
         foreach (var p in puntos)
         {
-            if (!p.enabled) continue; // 👈 Salteamos puntos inactivos
+            if (!p.enabled) continue;
             if (p.tipoAceptado == tipo)
-                return p.transform.position;
-        }
+            {
+                Transform hijo = p.transform.Find("PuntoDeEntrega");
+                if (hijo != null && hijo.TryGetComponent<BoxCollider2D>(out var col))
+                {
+                    Vector3 mejorPunto = p.transform.position;
+                    float mejorDistancia = Mathf.Infinity;
 
+                    // Generamos varios puntos dentro del área
+                    for (int i = 0; i < 5; i++)
+                    {
+                        Vector2 size = col.size * 0.5f;
+                        Vector2 randomOffset = new Vector2(
+                            Random.Range(-size.x, size.x),
+                            Random.Range(-size.y, size.y)
+                        );
+
+                        Vector3 worldPoint = col.transform.TransformPoint(randomOffset);
+
+                        float distancia = Vector3.Distance(transform.position, worldPoint);
+                        if (distancia < mejorDistancia)
+                        {
+                            mejorDistancia = distancia;
+                            mejorPunto = worldPoint;
+                        }
+                    }
+
+                    return mejorPunto;
+                }
+                else
+                {
+                    return p.transform.position;
+                }
+            }
+        }
         return transform.position;
     }
     public void TerminarRecoleccion()
@@ -296,7 +324,7 @@ public class Aldeano : UnidadJugador
             if (orientador != null)
                 orientador.GirarVisual(ovejaActual.transform.position);
 
-            // Animar y aplicar daño
+            // Anima y aplica daño
             animator.SetBool("Talar", true);
             yield return new WaitForSeconds(0.25f);
             ovejaActual.RecibirDanio(ataque, gameObject);
@@ -314,7 +342,7 @@ public class Aldeano : UnidadJugador
             yield return new WaitForSeconds(1f);
         }
 
-        //  Finalizar
+        //  Finaliza
         estadoActual = EstadoAldeano.Idle;
         agent.stoppingDistance = stoppingOriginal;
 
@@ -562,7 +590,7 @@ public class Aldeano : UnidadJugador
         }
         if (fuenteAldeano != null && fuenteAldeano.isPlaying)
             fuenteAldeano.Stop();
-        animator.SetBool("Construir", false); // finalizar animación
+        animator.SetBool("Construir", false); 
         estadoActual = EstadoAldeano.Idle;
     }
 
@@ -592,10 +620,8 @@ public class Aldeano : UnidadJugador
         }
             if (CargaRecoleccion.visual != null)
             CargaRecoleccion.visual.SetActive(false);
+        GestorEntidades.Instance.AldeanoMuerto();
         
-        Destroy(gameObject);
-
-
         base.Morir();
     }
 

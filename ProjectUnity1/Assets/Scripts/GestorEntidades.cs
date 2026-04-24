@@ -6,8 +6,18 @@ public class GestorEntidades : MonoBehaviour
     public static GestorEntidades Instance { get; private set; }
 
     public int aldeanosCreados = 0;
+    public int aldeanosMuertos = 0;
     public int arquerosCreados = 0;
+    public int arquerosMuertos = 0;
     public int caballerosCreados = 0;
+    public int caballerosMuertos = 0;
+
+    public int basesCreadas = 0;
+    public int basesDestruidas = 0;
+    public int casasCreadas = 0;
+    public int casasDestruidas = 0;
+    public int torresCreadas = 0;
+    public int torresDestruidas = 0;
 
     void Awake()
     {
@@ -18,43 +28,52 @@ public class GestorEntidades : MonoBehaviour
     {
         aldeanosCreados++;
     }
+    public void AldeanoMuerto()
+    {
+        aldeanosMuertos++;
+        GestorVictoria.Instance.VerificarDerrota();
+    }
     public void RegistrarArquero()
     {
         arquerosCreados++;
+    }
+    public void ArqueroMuerto()
+    {
+        arquerosMuertos++;
     }
     public void RegistrarCaballero()
     {
         caballerosCreados++;
     }
+    public void CaballeroMuerto()
+    {
+        caballerosMuertos++ ;
+    }
 
+    public void RegistrarBase()
+    {
+        basesCreadas++;
+    }
+    public void BaseDestruida()
+    {
+        basesDestruidas++;
+        GestorVictoria.Instance.VerificarDerrota();
+    }
+    public void RegistrarCasa()
+    {
+        casasCreadas++;
+    }
+    public void CasaDestruida()
+    {
+        casasDestruidas++;
+    }
+    public void RegistrarTorre()
+    {
+        torresCreadas++;
+    }
+    public void TorreDestruida()
+    {
+        torresDestruidas++;
+    }
 
-    //private Dictionary<string, List<GameObject>> entidades = new();
-
-    //private void Awake()
-    //{
-    //    if (Instance == null) Instance = this;
-    //    else Destroy(gameObject);
-    //}
-
-    //public void Registrar(string tipo, GameObject entidad)
-    //{
-    //    if (!entidades.ContainsKey(tipo))
-    //        entidades[tipo] = new List<GameObject>();
-
-    //    entidades[tipo].Add(entidad);
-    //}
-
-    //public void Eliminar(string tipo, GameObject entidad)
-    //{
-    //    if (entidades.ContainsKey(tipo))
-    //        entidades[tipo].Remove(entidad);
-    //}
-
-    //public int Contar(string tipo)
-    //{
-    //    if (entidades.ContainsKey(tipo))
-    //        return entidades[tipo].Count;
-
-    //    return 0;
-    //}
 }

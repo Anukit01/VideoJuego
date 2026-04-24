@@ -490,7 +490,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   indicadorSeleccion: {fileID: 2641789201689197614}
-  indicadorDestino: {fileID: 0}
+  indicadorDestino: {fileID: 1263417939850757219, guid: 55f175c1b4ec091408a59d7982a11765, type: 3}
   nombreAreaNavMesh: Default
 --- !u!61 &1232053168871307933
 BoxCollider2D:
@@ -603,7 +603,7 @@ MonoBehaviour:
   disparoDiagArriba: {fileID: 1135628592145359566}
   disparoDiagAbajo: {fileID: 8039196289223566319}
   proyectilPrefab: {fileID: 38843401188054820, guid: d5279797fd2793042a50ade7e8e824a6, type: 3}
-  radioDeteccion: 3
+  radioDeteccion: 4.5
   tiempoEntreDisparos: 1.5
   fuenteArquero: {fileID: 3360638047996878613}
   clipGolpear: {fileID: 8300000, guid: 1f741403be89b024b8fcae870c93a0f7, type: 3}

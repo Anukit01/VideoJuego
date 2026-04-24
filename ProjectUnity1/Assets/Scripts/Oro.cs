@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Oro : MonoBehaviour, IRecolectable
 {
-    public int cantidad = 90;
+    public int cantidad = 150;
     public GameObject oroRecolectadoPrefab;
     [SerializeField] private GameObject visualInactiva;
     [SerializeField] private GameObject visualActiva;

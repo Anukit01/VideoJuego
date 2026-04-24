@@ -8,8 +8,8 @@ public class Dinamita : MonoBehaviour
     private Vector2 puntoInicial;
 
     [Header("Configuración")]
-    [SerializeField] private float distanciaMaxima = 12f;
-    [SerializeField] private float tiempoAutoExplosion = 3f;
+    [SerializeField] private float distanciaMaxima = 3.5f;
+    [SerializeField] private float tiempoAutoExplosion = 2f;
     [SerializeField] private GameObject prefabExplosionFuego;
 
     private bool explotado = false;
@@ -82,7 +82,11 @@ void Update()
         Vector3 puntoImpacto = collision.ClosestPoint(transform.position);
         ExplotarEn(puntoImpacto);
     }
-
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow; // color del círculo
+        Gizmos.DrawWireSphere(transform.position, distanciaMaxima); // radio de vuelo máximo
+    }
 
     private void ExplotarEn(Vector3 posicion)
     {

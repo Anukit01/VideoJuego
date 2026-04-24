@@ -9,7 +9,7 @@ public class SeleccionadorDeUnidad : MonoBehaviour
     public List<GameObject> unidadesSeleccionadas = new();
     public List<GameObject> todasLasUnidades = new();
     [SerializeField] private GameObject canvasConstruccion;
-    
+    [SerializeField] private GameObject prefabIndicadorDestino;
 
     private void Awake()
     {
@@ -81,8 +81,10 @@ public class SeleccionadorDeUnidad : MonoBehaviour
     private void ManejarClickDerecho()
     {
         Vector2 destino = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Collider2D[] colliders = Physics2D.OverlapPointAll(destino);
+        if (prefabIndicadorDestino != null)
+            Instantiate(prefabIndicadorDestino, destino, Quaternion.identity);
 
+        Collider2D[] colliders = Physics2D.OverlapPointAll(destino);
         GameObject objetivo = null;
 
         foreach (var col in colliders)

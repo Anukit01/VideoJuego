@@ -89,7 +89,7 @@ public class CrearUnidad : MonoBehaviour
 
 
         GameObject nuevoArquero = Instantiate(unidadArquero, puntoSpawn.position, Quaternion.identity);
-        GestorEntidades.Instance.RegistrarArquero();
+        
 
         GestionRecrsos.Instance.ActualizarUI();
     }
@@ -127,7 +127,7 @@ public class CrearUnidad : MonoBehaviour
 
 
         GameObject nuevoAldeano = Instantiate(unidadAldeano, puntoSpawn.position, Quaternion.identity);
-        GestorEntidades.Instance.RegistrarAldeano();
+        
         GestionRecrsos.Instance.ActualizarUI();
 
 
@@ -167,7 +167,7 @@ public class CrearUnidad : MonoBehaviour
 
 
         GameObject nuevoCaballero = Instantiate(unidadCaballero, puntoSpawn.position, Quaternion.identity);
-        GestorEntidades.Instance.RegistrarCaballero();
+        
 
         GestionRecrsos.Instance.ActualizarUI();
 

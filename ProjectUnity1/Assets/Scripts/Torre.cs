@@ -18,11 +18,12 @@ public class Torre : EdificioBase
     protected override void Start()
     {
         InicializarVida(0);
-        vidaMaxima = 160;
+        vidaMaxima = 100;
         ataque = 14;
         defensa = 6;
         construido = false;
         BeginConstruction();
+        GestorEntidades.Instance.RegistrarTorre();
 
     }    
     public override void CompleteConstruction()
@@ -94,4 +95,9 @@ public class Torre : EdificioBase
 
     }
 
+    public override void Derribar()
+    {
+        GestorEntidades.Instance.TorreDestruida();
+        base.Derribar();
+    }
 }

@@ -100,9 +100,10 @@ public class GestionRecrsos : MonoBehaviour
     internal void SumarPoblación(int cantidad)
     {
         poblacion += cantidad;
-        recursos["población"] = madera;
+        recursos["población"] = poblacion;
         ActualizarUI();
     }
 }
+
 
 
