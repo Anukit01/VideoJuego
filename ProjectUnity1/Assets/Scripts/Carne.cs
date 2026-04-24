@@ -7,7 +7,7 @@ public class Carne : MonoBehaviour, IRecolectable
 
     [SerializeField] public float radioRecoleccion = 1.5f;
 
-    public int cantidad = 60;
+    public int cantidad = 100;
     public TipoRecurso Tipo => TipoRecurso.Alimento;
     public Transform PuntoDeRecoleccion => transform;
 

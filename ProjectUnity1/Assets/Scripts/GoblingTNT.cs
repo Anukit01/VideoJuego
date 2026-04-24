@@ -14,7 +14,7 @@ public class GoblingTNT : UnidadEnemigo, IAtacable
     [Header("Combate a distancia")]
     [SerializeField] private Transform puntoLanzamiento;
     [SerializeField] private GameObject dinamitaPrefab;
-    [SerializeField] private float radioDeteccion = 6f;
+    [SerializeField] private float radioDeteccion = 3.5f;
     [SerializeField] private float tiempoEntreLanzamientos = 2f;
     private float tiempoUltimoLanzamiento = 0f;
     private Coroutine rutinaAtaque;
@@ -30,7 +30,7 @@ public class GoblingTNT : UnidadEnemigo, IAtacable
         base.Start();
         animator = GetComponent<Animator>();
         InicializarVida(80);
-        ataque = 20;
+        ataque = 15;
         defensa = 2;
 
         GestorEnemigos.Instance?.RegistrarEnemigo();

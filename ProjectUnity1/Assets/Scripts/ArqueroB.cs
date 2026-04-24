@@ -13,7 +13,7 @@ public class Arquero : UnidadJugador
 
     [Header("Combate")]
     [SerializeField] private GameObject proyectilPrefab;
-    [SerializeField] private float radioDeteccion = 5f;
+    [SerializeField] private float radioDeteccion = 4.5f;
     [SerializeField] private float tiempoEntreDisparos = 1.5f;
 
     [SerializeField] private AudioSource fuenteArquero;
@@ -36,6 +36,7 @@ public class Arquero : UnidadJugador
         defensa = 4;
        
         base.Start();
+        GestorEntidades.Instance.RegistrarArquero();
     }
 
     public override void EjecutarAccion(GameObject objetivo, Vector3 destino)
@@ -285,7 +286,7 @@ public class Arquero : UnidadJugador
         {
             ReproducirUna(clipMorir, 1f, 0.5f);
         }
-        //GestorEntidades.Instance?.Eliminar(tipoUnidad, gameObject);
+        GestorEntidades.Instance.ArqueroMuerto();
         base.Morir();
     }
 

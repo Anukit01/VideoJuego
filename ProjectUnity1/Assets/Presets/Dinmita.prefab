@@ -148,8 +148,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94abc436b2d270040bfa5df3653a8104, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  distanciaMaxima: 12
-  tiempoAutoExplosion: 3
+  distanciaMaxima: 5
+  tiempoAutoExplosion: 2
   prefabExplosionFuego: {fileID: 3798780540708825452, guid: 6bfcd6518dc384d4ca2584df0c83c786, type: 3}
 --- !u!68 &5800143152436459572
 EdgeCollider2D:

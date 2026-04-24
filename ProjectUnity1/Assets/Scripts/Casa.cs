@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
 
 public class Casa : EdificioBase
@@ -17,6 +18,7 @@ public class Casa : EdificioBase
         BeginConstruction();
         if (vidaVisual != null)
             vidaVisual.SetActive(true);
+        GestorEntidades.Instance.RegistrarCasa();
     }
  
     public override void CompleteConstruction()
@@ -30,7 +32,12 @@ public class Casa : EdificioBase
     {
         if (vidaVisual != null)
             vidaVisual.SetActive(!vidaVisual.activeSelf);
-       
+
     }
-  
+    public override void Derribar()
+    {
+        GestorEntidades.Instance.CasaDestruida();
+        GestionRecrsos.Instance.SumarPoblación(-2);
+        base.Derribar();
+    }
 }
