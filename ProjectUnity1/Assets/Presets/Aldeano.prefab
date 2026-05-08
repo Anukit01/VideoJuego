@@ -183,7 +183,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   faccion: 0
-  vidaMaxima: 100
+  vidaMaxima: 75
   vida: 0
   ataque: 0
   defensa: 0
