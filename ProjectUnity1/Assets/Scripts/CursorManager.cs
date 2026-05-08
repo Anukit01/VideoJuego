@@ -43,6 +43,10 @@ public class CursorManager : MonoBehaviour
                 Cursor.SetCursor(cursorPastor, hotspot, CursorMode.Auto);
             else if (hit.GetComponent<IAtacable>() != null && EsEnemigo(hit.gameObject))
                 Cursor.SetCursor(cursorEspada, hotspot, CursorMode.Auto);
+            else if (hit.GetComponent<EdificioBase>() != null && EsEnemigo(hit.gameObject))
+            {
+                Cursor.SetCursor(cursorEspada, hotspot, CursorMode.Auto);
+            }
             else
                 Cursor.SetCursor(cursorDefault, hotspot, CursorMode.Auto);
         }

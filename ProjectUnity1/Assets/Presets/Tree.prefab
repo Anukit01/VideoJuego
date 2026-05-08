@@ -260,7 +260,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07dc9a6cbdfae254cbe40c17d6394b4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maderaDisponible: 50
+  maderaDisponible: 170
   troncoVisual: {fileID: 7088544199985052734}
   hojasVisual: {fileID: 3772747944301456294}
 --- !u!61 &5725397580358749052

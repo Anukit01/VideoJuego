@@ -29,6 +29,7 @@ public class Tree : MonoBehaviour, IRecolectable
     {
         if (troncoVisual != null) troncoVisual.SetActive(true);
         if (hojasVisual != null) hojasVisual.SetActive(false);
+
         this.enabled = false; 
     }
 

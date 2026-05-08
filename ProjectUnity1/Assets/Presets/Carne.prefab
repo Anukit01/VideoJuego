@@ -100,7 +100,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radioRecoleccion: 1.5
-  cantidad: 80
+  cantidad: 120
 --- !u!61 &3241779240144099700
 BoxCollider2D:
   m_ObjectHideFlags: 0

@@ -47,6 +47,7 @@ public class Aldeano : UnidadJugador
         GestorEntidades.Instance.RegistrarAldeano();
     }
 
+
     public override void EjecutarAccion(GameObject objetivo, Vector3 destino)
     {
         StopAllCoroutines();
@@ -120,7 +121,15 @@ public class Aldeano : UnidadJugador
             StartCoroutine(CombatirEntidadRutina(objetivo, atacable));
         }
     }
+    void SetRecoleccionActiva(bool recolectando)
+    {
+        EstaOcupadoPrivado = recolectando;
+        spriteRenderer.enabled = !recolectando;   
+        barraVida.SetActive(!recolectando);
 
+        if (colliderCombate != null)
+            colliderCombate.enabled = !recolectando;
+    }
     private GameObject ObtenerVisualPara(TipoRecurso tipo) => tipo switch
     {
         TipoRecurso.Madera => visualMadera,
@@ -403,27 +412,17 @@ public class Aldeano : UnidadJugador
 
         yield return new WaitUntil(() => !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance);
 
-
-        spriteRenderer.enabled = false;
+        SetRecoleccionActiva(true); // 🔹 invisible mientras mina
         mina.MostrarVisualActiva();
-        barraVida.SetActive(false); 
 
-        if (fuenteAldeano != null && clipMinando != null)
-        {
-            ReproducirLoop(clipMinando);
-        }
-      
-        EstaOcupadoPrivado = true;
-      
+        if (fuenteAldeano != null && clipMinando != null) ReproducirLoop(clipMinando);
+
         yield return new WaitForSeconds(8f);
-       
-        EstaOcupadoPrivado = false;
-        barraVida.SetActive(true);
 
+        SetRecoleccionActiva(false); // 🔹 vuelve visible siempre
         mina.Recolectar(this);
 
-        if (fuenteAldeano != null)
-            fuenteAldeano.Stop();
+        if (fuenteAldeano != null) fuenteAldeano.Stop();
 
         if (mina.cantidad > 0)
         {
@@ -435,8 +434,8 @@ public class Aldeano : UnidadJugador
             mina.MostrarVisualDestruida();
             ultimoRecurso = null;
         }
+
         animator.SetBool("ManosOcupadas", true);
-        spriteRenderer.enabled = true;
         visualBolsaOro.SetActive(true);
 
         Vector3 destino = BuscarPuntoDeEntrega(TipoRecurso.Oro);
@@ -625,18 +624,7 @@ public class Aldeano : UnidadJugador
         base.Morir();
     }
 
-    void SetRecoleccionActiva(bool recolectando)
-    {
-        EstaOcupadoPrivado = recolectando;
-        spriteRenderer.enabled = !recolectando;
-        barraVida.SetActive(!recolectando);
-
-        // Opcional: desactivar collider de combate
-        if (colliderCombate != null)
-            colliderCombate.enabled = !recolectando;
-
-        // O quitar temporalmente la interfaz IAtacable si es modular
-    }
+    
 
 }
 

@@ -65,7 +65,7 @@ public class CasaGobling : EntidadBase
         ActualizarVidaVisual();
         if (vida <= 0)
         {
-            Derribar();
+            Morir();
         }
     }
     private void OnDestroy()

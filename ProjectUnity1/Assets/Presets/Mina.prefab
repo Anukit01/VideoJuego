@@ -96,7 +96,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbefd49095bffb94985e9db07cb86fbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cantidad: 30
+  cantidad: 150
   oroRecolectadoPrefab: {fileID: 1591481692603908935, guid: 99baf7932b99f2d4194f9e35c7db156f, type: 3}
   visualInactiva: {fileID: 2677450679737243393}
   visualActiva: {fileID: 7062787054475303450}
@@ -104,7 +104,6 @@ MonoBehaviour:
   puntoDeRecoleccion: {fileID: 4426651278212412089}
   fuenteEdificio: {fileID: 0}
   clipDerrumbarse: {fileID: 8300000, guid: 90b6cc3d15e1daa4fb48a64fecf6e234, type: 3}
-  clipMinando: {fileID: 8300000, guid: 7a3569d9e19fc7f4a9e2f211accf4ddc, type: 3}
 --- !u!1 &2677450679737243393
 GameObject:
   m_ObjectHideFlags: 0

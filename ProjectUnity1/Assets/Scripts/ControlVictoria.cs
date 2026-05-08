@@ -40,7 +40,7 @@ public class GestorVictoria : MonoBehaviour
             fuenteVictoria.clip = clipVictoria;
             fuenteVictoria.Play();
         }
-        Time.timeScale = 0f; // sigue pausado
+        Time.timeScale = 0f; 
     }
 
     public void SeguirLaMasacre()
@@ -75,15 +75,18 @@ public class GestorVictoria : MonoBehaviour
 
     private void MostrarEstadisticas()
     {
-        // Podés cargar los datos desde tu sistema actual
+
         int aldeanos = GestorEntidades.Instance.aldeanosCreados;
+        int aldeanosM = GestorEntidades.Instance.aldeanosMuertos;
         int arqueros = GestorEntidades.Instance.arquerosCreados;
+        int arquerosM = GestorEntidades.Instance.arquerosMuertos;
         int caballeros = GestorEntidades.Instance.caballerosCreados;
+        int caballerosM = GestorEntidades.Instance.caballerosMuertos;
 
 
 
         TMP_Text texto = textoEstadisticas.GetComponent<TMP_Text>();
-        texto.text = $"Has creado:\n{aldeanos} Aldeanos\n{arqueros} Arqueros\n{caballeros} Caballeros";
+        texto.text = $"Has creado:\n{aldeanos} Aldeanos\n{arqueros} Arqueros\n{caballeros} Caballeros\n\n Han muerto:\n {aldeanosM} Aldeanos\n{arquerosM} Arqueros\n{caballerosM} Caballeros";
     }
     public void ActivarVictoriaParcial()
     {

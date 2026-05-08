@@ -5,13 +5,18 @@ using UnityEngine.Tilemaps;
 
 public class Camara : MonoBehaviour
 {
-        public float velocidad = 5f;
-        public int borde = 10;
+    public float velocidad = 5f;
+    public int borde = 10;
 
     [SerializeField] private Tilemap mapaBase;
     private Vector2 limiteInferior;
     private Vector2 limiteSuperior;
     private Camera camara;
+
+    [Header("Zoom")]
+    [SerializeField] private float zoomSpeed = 5f;
+    [SerializeField] private float minZoom = 5f;
+    [SerializeField] private float maxZoom = 20f;
 
     void Start()
     {
@@ -28,23 +33,33 @@ public class Camara : MonoBehaviour
         }
     }
 
-
     void Update()
+    {
+        // --- Movimiento por bordes ---
+        Vector3 movimiento = Vector3.zero;
+        Vector3 mousePos = Input.mousePosition;
+
+        if (mousePos.x < borde)
+            movimiento.x = -1;
+        else if (mousePos.x > Screen.width - borde)
+            movimiento.x = 1;
+
+        if (mousePos.y < borde)
+            movimiento.y = -1;
+        else if (mousePos.y > Screen.height - borde)
+            movimiento.y = 1;
+
+        transform.position += movimiento * velocidad * Time.deltaTime;
+
+        // --- Zoom con rueda del mouse ---
+        float scroll = Input.GetAxis("Mouse ScrollWheel");
+        if (scroll != 0f)
         {
-            Vector3 movimiento = Vector3.zero;
-            Vector3 mousePos = Input.mousePosition;
+            float newSize = camara.orthographicSize - scroll * zoomSpeed;
+            camara.orthographicSize = Mathf.Clamp(newSize, minZoom, maxZoom);
+        }
 
-            if (mousePos.x < borde)
-                movimiento.x = -1;
-            else if (mousePos.x > Screen.width - borde)
-                movimiento.x = 1;
-
-            if (mousePos.y < borde)
-                movimiento.y = -1;
-            else if (mousePos.y > Screen.height - borde)
-                movimiento.y = 1;
-
-            transform.position += movimiento * velocidad * Time.deltaTime;
+        // --- Limitar dentro del mapa ---
         float vertExtent = camara.orthographicSize;
         float horzExtent = vertExtent * Screen.width / Screen.height;
 
@@ -53,7 +68,5 @@ public class Camara : MonoBehaviour
         pos.y = Mathf.Clamp(pos.y, limiteInferior.y + vertExtent, limiteSuperior.y - vertExtent);
 
         transform.position = pos;
-
     }
-
 }
